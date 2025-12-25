@@ -1,0 +1,20 @@
+{
+  "welcome": "Welcome, {user}!",
+  "error.forbidden": "You do not have access.",
+  "login.success": "Successfully logged in.",
+  "login.failed": "Invalid email or password.",
+  "signup.success": "Account created successfully.",
+  "signup.failed": "Signup failed. Please try again.",
+  "withdraw.requested": "Withdrawal request submitted.",
+  "withdraw.approved": "Your withdrawal has been approved.",
+  "withdraw.rejected": "Your withdrawal request was rejected.",
+  "balance.insufficient": "Insufficient balance for this transaction.",
+  "profile.greeting": "Hello, {user}!",
+  "game.joined": "You have joined the game.",
+  "game.starting": "Game is starting!",
+  "game.ended": "Game has ended. Final rank: {rank}.",
+  "session.not_found": "Game session not found.",
+  "turn.invalid": "It's not your turn.",
+  "move.accepted": "Move accepted.",
+  "move.rejected": "Invalid move."
+}

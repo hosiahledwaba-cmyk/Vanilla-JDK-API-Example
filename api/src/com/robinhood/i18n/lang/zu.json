@@ -1,0 +1,20 @@
+{
+  "welcome": "Siyakwamukela, {user}!",
+  "error.forbidden": "Awunalo ilungelo lokungena.",
+  "login.success": "Ungene ngempumelelo.",
+  "login.failed": "I-imeyili noma iphasiwedi ayivumelekile.",
+  "signup.success": "I-akhawunti yakho idalwe ngempumelelo.",
+  "signup.failed": "Ubhaliso aluphumelelanga. Sicela uzame futhi.",
+  "withdraw.requested": "Isicelo sokuhoxiswa sithunyelwe.",
+  "withdraw.approved": "Ukuhoxiswa kwakho kugunyaziwe.",
+  "withdraw.rejected": "Isicelo sakho sokuhoxiswa senqatshiwe.",
+  "balance.insufficient": "Asikho isamba esanele sokwenza lo mkhonyovu.",
+  "profile.greeting": "Sawubona, {user}!",
+  "game.joined": "Usungene kumdlalo.",
+  "game.starting": "Umdlalo uyaqala!",
+  "game.ended": "Umdlalo usuphelile. Isikhundla sokugcina: {rank}.",
+  "session.not_found": "Iseshini yomdlalo ayitholakali.",
+  "turn.invalid": "Akusiyona indlela yakho.",
+  "move.accepted": "Ukuzunywa kwamukelwe.",
+  "move.rejected": "Ukuzunywa akuvumelekile."
+}

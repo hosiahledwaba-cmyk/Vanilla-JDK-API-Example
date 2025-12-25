@@ -1,0 +1,20 @@
+{
+  "welcome": "Welkom, {user}!",
+  "error.forbidden": "Jy het nie toegang nie.",
+  "login.success": "Suksesvol aangemeld.",
+  "login.failed": "Ongeldige e-pos of wagwoord.",
+  "signup.success": "Rekening suksesvol geskep.",
+  "signup.failed": "Registrasie het misluk. Probeer asseblief weer.",
+  "withdraw.requested": "Onttrekkingsversoek is ingedien.",
+  "withdraw.approved": "Jou onttrekking is goedgekeur.",
+  "withdraw.rejected": "Jou onttrekkingsversoek is afgekeur.",
+  "balance.insufficient": "Nie genoeg saldo vir hierdie transaksie nie.",
+  "profile.greeting": "Hallo, {user}!",
+  "game.joined": "Jy het by die spel aangesluit.",
+  "game.starting": "Speletjie begin nou!",
+  "game.ended": "Speletjie is verby. Finale rang: {rank}.",
+  "session.not_found": "Speletjiesessie nie gevind nie.",
+  "turn.invalid": "Dis nie jou beurt nie.",
+  "move.accepted": "Beweging aanvaar.",
+  "move.rejected": "Ongeldige beweging."
+}

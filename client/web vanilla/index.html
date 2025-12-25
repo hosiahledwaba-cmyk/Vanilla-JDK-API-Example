@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>RobinHood Gaming Platform</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+  <!-- Main App Container -->
+  <div class="max-w-3xl mx-auto mt-8 p-4 bg-white rounded shadow">
+    <header class="flex justify-between items-center mb-4">
+      <h1 class="text-2xl font-bold text-blue-600">RobinHood</h1>
+      <button id="logoutBtn" class="hidden text-red-600 hover:underline">Logout</button>
+    </header>
+
+    <!-- Dynamic Content Mount Point -->
+    <div id="app"></div>
+  </div>
+
+  <!-- JS Modules -->
+  <script src="scripts/main.js"></script>
+  <script src="scripts/auth.js"></script>
+
+</body>
+</html>

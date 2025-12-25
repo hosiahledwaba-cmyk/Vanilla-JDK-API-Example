@@ -1,0 +1,20 @@
+{
+  "welcome": "Re a go amogela, {user}!",
+  "error.forbidden": "Ga o na tshwanelo ya go tsena.",
+  "login.success": "O tsene ka katlego.",
+  "login.failed": "Imeile goba phasewete ga di nepopiwa.",
+  "signup.success": "Akaonto e hlodilwe ka katlego.",
+  "signup.failed": "Ngwaga e hlolehile. Leka gape.",
+  "withdraw.requested": "Kgopelo ya go ntšha tšhelete e romilwe.",
+  "withdraw.approved": "Kgopelo ya gago e amogilwe.",
+  "withdraw.rejected": "Kgopelo ya gago e latotšwe.",
+  "balance.insufficient": "Ga go na tšhelete e lekanego.",
+  "profile.greeting": "Dumela, {user}!",
+  "game.joined": "O tsene mo papading.",
+  "game.starting": "Papo e thoma!",
+  "game.ended": "Papo e fedile. Boemo: {rank}.",
+  "session.not_found": "Papo ga e hwetšagale.",
+  "turn.invalid": "Ga se nako ya gago.",
+  "move.accepted": "Mohuta o amogilwe.",
+  "move.rejected": "Mohuta ga o nepopiwa."
+}
