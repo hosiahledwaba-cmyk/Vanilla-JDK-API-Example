@@ -1,4 +1,4 @@
-# RobinHood — Vanilla JDK Real-Time Multiplayer Gaming Platform
+# RobinHood. Vanilla JDK Real-Time Multiplayer Gaming Platform
 
 [![Java](https://img.shields.io/badge/Java-21%2B%20(Pure%20JDK)-orange?logo=openjdk)](https://openjdk.org/)
 [![Database](https://img.shields.io/badge/Database-PostgreSQL%2016-blue?logo=postgresql)](https://www.postgresql.org/)
