@@ -1,6 +1,7 @@
 // client/web vanilla/scripts/wallet.js
 
 import { renderNavTabs, bindNavTabs } from './main.js';
+import { getIcon } from './icons.js';
 
 export const WalletModule = {
   async render(container) {
@@ -20,7 +21,7 @@ export const WalletModule = {
               </p>
             </div>
             <button id="refreshBalanceBtn" class="btn btn-secondary btn-sm" style="display: flex; align-items: center; gap: 0.35rem;">
-              <span>🔄</span> Refresh Balance
+              ${getIcon('refresh', 14)} Refresh Balance
             </button>
           </div>
 
@@ -34,14 +35,16 @@ export const WalletModule = {
                 Active across Khasino, Snakes & Ladders, Crazy 8s, and Uno
               </div>
             </div>
-            <div style="font-size: 3.25rem; opacity: 0.9;">🪙</div>
+            <div style="opacity: 0.85; color: var(--accent-primary); display: flex; align-items: center; justify-content: center;">
+              ${getIcon('coins', 54)}
+            </div>
           </div>
 
           <div class="wallet-grid">
             <!-- Deposit Section -->
             <div style="background: var(--surface-secondary); border: 1px solid var(--border-medium); border-radius: var(--radius-lg); padding: 1.5rem;">
               <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
-                <span style="font-size: 1.25rem;">💳</span>
+                <span style="color: var(--accent-primary); display: inline-flex;">${getIcon('card', 20)}</span>
                 <h3 style="font-size: 1.15rem; font-weight: 700;">Deposit Tokens</h3>
               </div>
               <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.25rem;">
@@ -73,7 +76,7 @@ export const WalletModule = {
             <!-- Withdraw Section -->
             <div style="background: var(--surface-secondary); border: 1px solid var(--border-medium); border-radius: var(--radius-lg); padding: 1.5rem;">
               <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
-                <span style="font-size: 1.25rem;">💸</span>
+                <span style="color: #34d399; display: inline-flex;">${getIcon('arrowUpRight', 20)}</span>
                 <h3 style="font-size: 1.15rem; font-weight: 700;">Cash Out Tokens</h3>
               </div>
               <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.25rem;">

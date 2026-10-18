@@ -1752,13 +1752,15 @@ a:hover {
 }
 
 .ludo-cell.is-safe::after {
-  content: '★';
+  content: '';
   position: absolute;
-  font-size: 0.9rem;
-  color: #F59E0B;
-  opacity: 0.7;
+  width: 14px;
+  height: 14px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23F59E0B'%3E%3Cpolygon points='12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2'/%3E%3C/svg%3E") no-repeat center;
+  background-size: contain;
+  opacity: 0.75;
   pointer-events: none;
-  text-shadow: 0 0 6px rgba(245, 158, 11, 0.6);
+  filter: drop-shadow(0 0 4px rgba(245, 158, 11, 0.6));
 }
 
 /* Starting Squares */
@@ -2115,4 +2117,29 @@ a:hover {
   color: var(--accent-primary);
   font-weight: 700;
 }
+
+/* Universal SVG Icon Utilities */
+.app-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  flex-shrink: 0;
+  stroke: currentColor;
+  fill: none;
+}
+
+.svg-dice-face {
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.btn .app-icon {
+  margin-right: 0.4rem;
+}
+
+.btn-icon-only .app-icon {
+  margin-right: 0;
+}
+
 

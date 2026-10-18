@@ -1,6 +1,7 @@
 // client/web vanilla/scripts/leaderboard.js
 
 import { renderNavTabs, bindNavTabs } from './main.js';
+import { getIcon } from './icons.js';
 
 export const LeaderboardModule = {
   async render(container) {
@@ -19,7 +20,7 @@ export const LeaderboardModule = {
               </p>
             </div>
             <button id="refreshLeaderboardBtn" class="btn btn-secondary btn-sm" style="display: flex; align-items: center; gap: 0.35rem;">
-              <span>🔄</span> Refresh Ranks
+              ${getIcon('refresh', 14)} Refresh Ranks
             </button>
           </div>
 
@@ -81,16 +82,16 @@ export const LeaderboardModule = {
       tbody.innerHTML = list.map((item, idx) => {
         const rank = idx + 1;
         let rankBadge = `<span class="rank-badge">${rank}</span>`;
-        if (rank === 1) rankBadge = `<span class="rank-badge rank-1">🥇</span>`;
-        else if (rank === 2) rankBadge = `<span class="rank-badge rank-2">🥈</span>`;
-        else if (rank === 3) rankBadge = `<span class="rank-badge rank-3">🥉</span>`;
+        if (rank === 1) rankBadge = `<span class="rank-badge rank-1">${getIcon('crown', 14, '', 'color: #fbbf24;')}</span>`;
+        else if (rank === 2) rankBadge = `<span class="rank-badge rank-2">${getIcon('medal', 14, '', 'color: #94a3b8;')}</span>`;
+        else if (rank === 3) rankBadge = `<span class="rank-badge rank-3">${getIcon('medal', 14, '', 'color: #d97706;')}</span>`;
 
         const xp = item.xp ?? 0;
-        let tier = '🥉 Bronze';
-        if (xp >= 500) tier = '👑 Diamond';
-        else if (xp >= 200) tier = '💎 Platinum';
-        else if (xp >= 100) tier = '🥇 Gold';
-        else if (xp >= 50) tier = '🥈 Silver';
+        let tier = `<span style="display: inline-flex; align-items: center; gap: 4px;">${getIcon('medal', 14, '', 'color: #d97706;')} Bronze</span>`;
+        if (xp >= 500) tier = `<span style="display: inline-flex; align-items: center; gap: 4px;">${getIcon('crown', 14, '', 'color: #38bdf8;')} Diamond</span>`;
+        else if (xp >= 200) tier = `<span style="display: inline-flex; align-items: center; gap: 4px;">${getIcon('diamond', 14, '', 'color: #a78bfa;')} Platinum</span>`;
+        else if (xp >= 100) tier = `<span style="display: inline-flex; align-items: center; gap: 4px;">${getIcon('medal', 14, '', 'color: #fbbf24;')} Gold</span>`;
+        else if (xp >= 50) tier = `<span style="display: inline-flex; align-items: center; gap: 4px;">${getIcon('medal', 14, '', 'color: #94a3b8;')} Silver</span>`;
 
         const email = item.email || item.user || 'Unknown';
         const initial = email.charAt(0).toUpperCase();

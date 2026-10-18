@@ -404,7 +404,11 @@
     <div class="docs-header-inner">
       <div style="display: flex; align-items: center; gap: 1.25rem;">
         <a href="/" class="docs-brand">
-          <div class="docs-brand-icon">🏹</div>
+          <div class="docs-brand-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+          </div>
           <div>
             <div style="font-weight: 800; font-size: 1.15rem; display: flex; align-items: center; gap: 0.5rem;">
               RobinHood <span style="color: var(--accent-cyan);">API Explorer</span>
@@ -429,23 +433,33 @@
       <!-- Navigation Tabs -->
       <div class="nav-tabs-bar">
         <button id="tabBtnDocs" class="nav-tab-btn active" onclick="switchTab('docs')">
-          <span>⚡</span> API Console (Swagger)
+          <svg class="app-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> API Console (Swagger)
         </button>
         <button id="tabBtnMonitor" class="nav-tab-btn" onclick="switchTab('monitor')">
-          <span>📊</span> Live System Monitor
+          <svg class="app-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Live System Monitor
         </button>
         <button id="tabBtnStream" class="nav-tab-btn" onclick="switchTab('stream')">
-          <span>📡</span> SSE Event Stream
+          <svg class="app-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg> SSE Event Stream
         </button>
       </div>
 
       <!-- Header Controls -->
       <div style="display: flex; align-items: center; gap: 0.75rem;">
         <button id="authBtn" class="btn btn-secondary" onclick="openAuthModal()" style="font-size: 0.85rem; padding: 0.45rem 0.9rem; display: flex; align-items: center; gap: 0.4rem; border-color: rgba(6, 182, 212, 0.4); color: #38bdf8;">
-          <span id="authBtnIcon">🔓</span> <span id="authBtnText">Authorize</span>
+          <span id="authBtnIcon" style="display:inline-flex; align-items:center;">
+            <svg class="app-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 9.9-1"/>
+            </svg>
+          </span>
+          <span id="authBtnText">Authorize</span>
         </button>
-        <a href="/" class="btn btn-secondary" style="font-size: 0.85rem; padding: 0.45rem 0.9rem; text-decoration: none;">
-          🎮 Game Lobby
+        <a href="/" class="btn btn-secondary" style="font-size: 0.85rem; padding: 0.45rem 0.9rem; text-decoration: none; display: flex; align-items: center; gap: 0.35rem;">
+          <svg class="app-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="6" width="20" height="12" rx="4"/>
+            <path d="M6 12h4M8 10v4M16 10h.01M18 12h.01"/>
+          </svg>
+          Game Lobby
         </a>
       </div>
     </div>
@@ -456,7 +470,11 @@
     <!-- Active Token / Quick Context Banner -->
     <div class="auth-banner">
       <div style="display: flex; align-items: center; gap: 0.85rem;">
-        <div style="font-size: 1.5rem;">🔑</div>
+        <div style="color: var(--accent-cyan); display: flex; align-items: center;">
+          <svg class="app-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 2l-2 2m-1.5 1.5L16 7l-1.5-1.5-2 2 1.5 1.5L12 11l-4 4a5.5 5.5 0 1 1-2-2l4-4 2-2-1.5-1.5 2-2 1.5 1.5L18 5.5l2-2z"/>
+          </svg>
+        </div>
         <div>
           <div style="font-size: 0.85rem; font-weight: 700; color: #f8fafc;">
             Active Authorization Context:
@@ -468,14 +486,14 @@
         </div>
       </div>
       <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-        <button class="btn btn-secondary" onclick="quickAuth('p1@robinhood.io', 'password123')" style="font-size: 0.75rem; padding: 0.35rem 0.75rem;">
-          ⚡ Login Player 1
+        <button class="btn btn-secondary" onclick="quickAuth('p1@robinhood.io', 'password123')" style="font-size: 0.75rem; padding: 0.35rem 0.75rem; display: flex; align-items: center; gap: 0.35rem;">
+          <svg class="app-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Login Player 1
         </button>
-        <button class="btn btn-secondary" onclick="quickAuth('p2@robinhood.io', 'password123')" style="font-size: 0.75rem; padding: 0.35rem 0.75rem;">
-          ⚡ Login Player 2
+        <button class="btn btn-secondary" onclick="quickAuth('p2@robinhood.io', 'password123')" style="font-size: 0.75rem; padding: 0.35rem 0.75rem; display: flex; align-items: center; gap: 0.35rem;">
+          <svg class="app-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Login Player 2
         </button>
-        <button class="btn btn-secondary" onclick="setAdminToken()" style="font-size: 0.75rem; padding: 0.35rem 0.75rem; border-color: rgba(139, 92, 246, 0.4); color: #c084fc;">
-          🛡️ Admin Token
+        <button class="btn btn-secondary" onclick="setAdminToken()" style="font-size: 0.75rem; padding: 0.35rem 0.75rem; border-color: rgba(139, 92, 246, 0.4); color: #c084fc; display: flex; align-items: center; gap: 0.35rem;">
+          <svg class="app-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Admin Token
         </button>
       </div>
     </div>
@@ -485,7 +503,7 @@
       <!-- Search & Filter Controls -->
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
         <div style="display: flex; gap: 0.5rem; align-items: center; flex: 1; max-width: 500px;">
-          <input type="text" id="endpointSearch" class="form-input" placeholder="🔍 Filter endpoints by path, tag, or method..." oninput="filterEndpoints()" style="font-size: 0.88rem; padding: 0.55rem 1rem;" />
+          <input type="text" id="endpointSearch" class="form-input" placeholder="Filter endpoints by path, tag, or method..." oninput="filterEndpoints()" style="font-size: 0.88rem; padding: 0.55rem 1rem;" />
         </div>
         <div style="display: flex; gap: 0.5rem;">
           <button class="btn btn-secondary" onclick="expandAllEndpoints(true)" style="font-size: 0.78rem; padding: 0.35rem 0.75rem;">
@@ -506,7 +524,7 @@
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
         <div>
           <h2 style="font-size: 1.4rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
-            <span>📊</span> Real-Time Infrastructure & Engine Monitoring
+            <svg class="app-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Real-Time Infrastructure & Engine Monitoring
           </h2>
           <p style="color: #94a3b8; font-size: 0.85rem;">
             Live JVM runtime telemetry, Docker PostgreSQL connection status, and game session counters.
@@ -524,7 +542,7 @@
             </select>
           </div>
           <button class="btn btn-secondary" onclick="fetchSystemStats(true)" style="font-size: 0.82rem; padding: 0.4rem 0.85rem; display: flex; align-items: center; gap: 0.35rem;">
-            <span>🔄</span> Refresh Now
+            <svg class="app-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6"/><path d="M20.49 15a9 9 0 0 1-14.85 3.36L2.5 16M3.51 9a9 9 0 0 1 14.85-3.36L21.5 8"/></svg> Refresh Now
           </button>
         </div>
       </div>
@@ -534,7 +552,7 @@
         <div class="metric-card">
           <div class="metric-title">
             <span>Server & NIO Engine</span>
-            <span>⚡ Port 8080</span>
+            <span>Port 8080</span>
           </div>
           <div class="metric-val" id="metricServerStatus">UP</div>
           <div class="metric-sub" id="metricServerUptime">Uptime: Calculating...</div>
@@ -566,7 +584,7 @@
         <div class="metric-card">
           <div class="metric-title">
             <span>Live Game Engine</span>
-            <span>🎮 Synchronous</span>
+            <span>Synchronous</span>
           </div>
           <div class="metric-val" id="metricActiveSessions">0</div>
           <div class="metric-sub" id="metricWaitingRooms">Waiting Lobbies: 0</div>
@@ -581,7 +599,7 @@
             Live JSON Telemetry Payload (<code>/api/system/stats</code>)
           </h3>
           <button class="btn btn-secondary" onclick="navigator.clipboard.writeText(document.getElementById('rawStatsViewer').textContent); window.showToast('Copied JSON telemetry', 'success');" style="font-size: 0.75rem; padding: 0.25rem 0.65rem;">
-            📋 Copy JSON
+            Copy JSON
           </button>
         </div>
         <div id="rawStatsViewer" class="response-box" style="margin-top: 0; max-height: 280px;">Loading live telemetry...</div>
@@ -594,7 +612,7 @@
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
           <div>
             <h2 style="font-size: 1.3rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
-              <span>📡</span> Real-Time Server-Sent Events (SSE) Live Monitor
+              <svg class="app-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg> Real-Time Server-Sent Events (SSE) Live Monitor
             </h2>
             <p style="color: #94a3b8; font-size: 0.85rem;">
               Attach to any active Match Session ID or Waiting Room ID to inspect real-time published broadcasts.
@@ -603,7 +621,7 @@
 
           <div style="display: flex; gap: 0.5rem;">
             <button class="btn btn-secondary" onclick="clearStreamLog()" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">
-              ✕ Clear Stream
+              Clear Stream
             </button>
           </div>
         </div>
@@ -628,9 +646,9 @@
     <div class="modal-content" style="max-width: 520px; text-align: left; padding: 2rem;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.75rem;">
         <h3 style="font-size: 1.25rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem;">
-          <span>🔐</span> API Authorization (Bearer Token)
+          <svg class="app-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> API Authorization (Bearer Token)
         </h3>
-        <button class="btn btn-secondary" onclick="closeAuthModal()" style="font-size: 0.8rem; padding: 0.25rem 0.6rem;">✕</button>
+        <button class="btn btn-secondary" onclick="closeAuthModal()" style="font-size: 0.8rem; padding: 0.25rem 0.6rem;">&times;</button>
       </div>
 
       <div style="font-size: 0.85rem; color: #94a3b8; line-height: 1.5; margin-bottom: 1rem;">

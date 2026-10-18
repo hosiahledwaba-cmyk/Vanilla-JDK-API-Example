@@ -1,6 +1,7 @@
 // client/web vanilla/scripts/history.js
 
 import { renderNavTabs, bindNavTabs } from './main.js';
+import { getIcon } from './icons.js';
 
 export const HistoryModule = {
   async render(container) {
@@ -19,7 +20,7 @@ export const HistoryModule = {
               </p>
             </div>
             <button id="refreshHistoryBtn" class="btn btn-secondary btn-sm" style="display: flex; align-items: center; gap: 0.35rem;">
-              <span>🔄</span> Refresh Log
+              ${getIcon('refresh', 14)} Refresh Log
             </button>
           </div>
 
@@ -83,13 +84,15 @@ export const HistoryModule = {
         const amount = item.amount ?? 0;
         const status = item.status || 'SUCCESS';
         const statusColor = status === 'APPROVED' || status === 'SUCCESS' ? '#34d399' : status === 'PENDING' ? '#fbbf24' : '#fb7185';
-        const icon = type.toLowerCase().includes('withdraw') ? '💸' : '🪙';
+        const icon = type.toLowerCase().includes('withdraw') 
+          ? getIcon('arrowUpRight', 16, '', 'color: #34d399;') 
+          : getIcon('coin', 16, '', 'color: #fbbf24;');
 
         return `
           <tr>
             <td>
               <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600;">
-                <span>${icon}</span>
+                <span style="display: inline-flex;">${icon}</span>
                 <span>${type}</span>
               </div>
             </td>

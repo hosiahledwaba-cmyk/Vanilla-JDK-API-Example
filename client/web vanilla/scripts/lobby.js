@@ -1,6 +1,7 @@
 // client/web vanilla/scripts/lobby.js
 
 import { renderNavTabs, bindNavTabs, loadModule } from './main.js';
+import { getIcon } from './icons.js';
 
 export const LobbyModule = {
   render(container) {
@@ -46,11 +47,11 @@ export const LobbyModule = {
               <div class="game-option-card" data-game="khasino">
                 <div class="game-card-top">
                   <span class="game-badge" style="border-color: rgba(66, 217, 208, 0.4); background: rgba(66, 217, 208, 0.12); color: var(--accent-primary);">
-                    🇿🇦 Authentic SA
+                    Authentic SA
                   </span>
-                  <span class="game-selection-pill">✓ Selected</span>
+                  <span class="game-selection-pill">${getIcon('check', 12)} Selected</span>
                 </div>
-                <div class="game-icon-box">🃏</div>
+                <div class="game-icon-box">${getIcon('cards', 28)}</div>
                 <div>
                   <div class="game-title">Khasino (Kasi Kasino)</div>
                   <div class="game-desc">Authentic 40-card South African fishing game with Chow, Builds, Steals, Cupha, and 2v2 Partnerships.</div>
@@ -60,10 +61,10 @@ export const LobbyModule = {
               <!-- Snakes & Ladders -->
               <div class="game-option-card active" data-game="snl">
                 <div class="game-card-top">
-                  <span class="game-badge">🎲 Classic Board</span>
-                  <span class="game-selection-pill">✓ Selected</span>
+                  <span class="game-badge">Classic Board</span>
+                  <span class="game-selection-pill">${getIcon('check', 12)} Selected</span>
                 </div>
-                <div class="game-icon-box">🎲</div>
+                <div class="game-icon-box">${getIcon('dice', 28)}</div>
                 <div>
                   <div class="game-title">Snakes & Ladders</div>
                   <div class="game-desc">100-cell zigzag race, dice rolling, snakes and ladders with tactical CPU auto-play.</div>
@@ -73,10 +74,10 @@ export const LobbyModule = {
               <!-- Crazy Eights -->
               <div class="game-option-card" data-game="crazy8">
                 <div class="game-card-top">
-                  <span class="game-badge">🎴 Card Classic</span>
-                  <span class="game-selection-pill">✓ Selected</span>
+                  <span class="game-badge">Card Classic</span>
+                  <span class="game-selection-pill">${getIcon('check', 12)} Selected</span>
                 </div>
-                <div class="game-icon-box">🎴</div>
+                <div class="game-icon-box">${getIcon('cards', 28)}</div>
                 <div>
                   <div class="game-title">Crazy Eights</div>
                   <div class="game-desc">Match rank or suit, 8s wild with strategic suit calling and intelligent bot decision logic.</div>
@@ -86,10 +87,10 @@ export const LobbyModule = {
               <!-- Uno Arena -->
               <div class="game-option-card" data-game="uno">
                 <div class="game-card-top">
-                  <span class="game-badge">🌈 Action Arena</span>
-                  <span class="game-selection-pill">✓ Selected</span>
+                  <span class="game-badge">Action Arena</span>
+                  <span class="game-selection-pill">${getIcon('check', 12)} Selected</span>
                 </div>
-                <div class="game-icon-box">🌈</div>
+                <div class="game-icon-box">${getIcon('sparkles', 28)}</div>
                 <div>
                   <div class="game-title">Uno Arena</div>
                   <div class="game-desc">Colors, Skips, Reverses, +2, Wild, and +4 tactical action cards with smart AI bots.</div>
@@ -100,11 +101,11 @@ export const LobbyModule = {
               <div class="game-option-card" data-game="ludo">
                 <div class="game-card-top">
                   <span class="game-badge" style="border-color: rgba(245, 158, 11, 0.4); background: rgba(245, 158, 11, 0.12); color: #F59E0B;">
-                    🎯 4-Colour Race
+                    4-Colour Race
                   </span>
-                  <span class="game-selection-pill">✓ Selected</span>
+                  <span class="game-selection-pill">${getIcon('check', 12)} Selected</span>
                 </div>
-                <div class="game-icon-box">♟️</div>
+                <div class="game-icon-box">${getIcon('ludo', 28)}</div>
                 <div>
                   <div class="game-title">Ludo Master</div>
                   <div class="game-desc">Strategic 4-colour race for 2-4 players. Exact finish rolls, bonus sixes, captures, and safe star sanctuaries.</div>
@@ -116,10 +117,10 @@ export const LobbyModule = {
             <div id="khasinoConfigPanel" class="hidden" style="margin-top: 1.5rem; padding: 1.35rem; background: var(--surface-secondary); border: 1px solid var(--border-medium); border-radius: var(--radius-md);">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
                 <div style="font-weight: 700; color: var(--accent-primary); font-size: 0.95rem; display: flex; align-items: center; gap: 0.5rem;">
-                  <span>🇿🇦</span> South African Khasino Configuration
+                  <span>${getIcon('cards', 18)}</span> South African Khasino Configuration
                 </div>
                 <button type="button" id="lobbyRulesGuideBtn" class="btn btn-secondary btn-sm" style="font-size: 0.8rem;">
-                  📖 View Official Rules
+                  ${getIcon('scroll', 14)} View Official Rules
                 </button>
               </div>
 
@@ -127,16 +128,16 @@ export const LobbyModule = {
                 <label class="form-label">Game Mode & Player Setup</label>
                 <div class="chip-select-group" id="khasinoModeChips">
                   <button type="button" class="chip-btn active" data-mode="TWO_PLAYER" data-players="2">
-                    👥 2 Players (1v1, Two 10-Card Deals, 11-Pt)
+                    ${getIcon('users', 14)} 2 Players (1v1, Two 10-Card Deals, 11-Pt)
                   </button>
                   <button type="button" class="chip-btn" data-mode="THREE_PLAYER" data-players="3">
-                    👥 3 Players (13 Cards + 1 Floor, 7-Pt)
+                    ${getIcon('users', 14)} 3 Players (13 Cards + 1 Floor, 7-Pt)
                   </button>
                   <button type="button" class="chip-btn" data-mode="FOUR_PLAYER_SINGLES" data-players="4">
-                    👥 4 Players Singles (Solo 4-Way, 7-Pt)
+                    ${getIcon('users', 14)} 4 Players Singles (Solo 4-Way, 7-Pt)
                   </button>
                   <button type="button" class="chip-btn" data-mode="FOUR_PLAYER_PARTNERSHIPS" data-players="4">
-                    🤝 4 Players 2v2 Partnerships (11-Pt)
+                    ${getIcon('users', 14)} 4 Players 2v2 Partnerships (11-Pt)
                   </button>
                 </div>
               </div>
@@ -145,13 +146,13 @@ export const LobbyModule = {
                 <label class="form-label">AI Difficulty</label>
                 <div class="chip-select-group" id="khasinoDiffChips">
                   <button type="button" class="chip-btn" data-diff="EASY">
-                    🟢 Easy (Casual)
+                    <span style="color: #34d399; font-size: 0.75rem;">●</span> Easy (Casual)
                   </button>
                   <button type="button" class="chip-btn active" data-diff="MEDIUM">
-                    🟡 Medium (Strategic)
+                    <span style="color: #fbbf24; font-size: 0.75rem;">●</span> Medium (Strategic)
                   </button>
                   <button type="button" class="chip-btn" data-diff="HARD">
-                    🔴 Hard (Competitive Cupha Master)
+                    <span style="color: #f87171; font-size: 0.75rem;">●</span> Hard (Competitive Cupha Master)
                   </button>
                 </div>
               </div>
@@ -161,10 +162,10 @@ export const LobbyModule = {
             <div id="ludoConfigPanel" class="hidden" style="margin-top: 1.5rem; padding: 1.35rem; background: var(--surface-secondary); border: 1px solid var(--border-medium); border-radius: var(--radius-md);">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
                 <div style="font-weight: 700; color: #F59E0B; font-size: 0.95rem; display: flex; align-items: center; gap: 0.5rem;">
-                  <span>♟️</span> Ludo Match Setup & Player Count
+                  <span>${getIcon('ludo', 18)}</span> Ludo Match Setup & Player Count
                 </div>
                 <button type="button" id="lobbyLudoRulesBtn" class="btn btn-secondary btn-sm" style="font-size: 0.8rem;">
-                  📖 View Official Rules
+                  ${getIcon('scroll', 14)} View Official Rules
                 </button>
               </div>
 
@@ -172,13 +173,13 @@ export const LobbyModule = {
                 <label class="form-label">Supported Player Count</label>
                 <div class="chip-select-group" id="ludoPlayerChips">
                   <button type="button" class="chip-btn active" data-players="2">
-                    👥 2 Players (Red vs Yellow)
+                    ${getIcon('users', 14)} 2 Players (Red vs Yellow)
                   </button>
                   <button type="button" class="chip-btn" data-players="3">
-                    👥 3 Players (Red, Green, Yellow)
+                    ${getIcon('users', 14)} 3 Players (Red, Green, Yellow)
                   </button>
                   <button type="button" class="chip-btn" data-players="4">
-                    👥 4 Players (Red, Green, Yellow, Blue)
+                    ${getIcon('users', 14)} 4 Players (Red, Green, Yellow, Blue)
                   </button>
                 </div>
               </div>
@@ -188,20 +189,20 @@ export const LobbyModule = {
             <div class="form-group" style="margin-top: 1.75rem;">
               <label class="form-label">Wager Amount (Tokens)</label>
               <div class="chip-select-group" id="wagerChips">
-                <button type="button" class="chip-btn" data-bet="25">🪙 25 Tokens</button>
-                <button type="button" class="chip-btn active" data-bet="50">🪙 50 Tokens</button>
-                <button type="button" class="chip-btn" data-bet="100">🪙 100 Tokens</button>
-                <button type="button" class="chip-btn" data-bet="250">🪙 250 Tokens</button>
+                <button type="button" class="chip-btn" data-bet="25">${getIcon('coin', 13)} 25 Tokens</button>
+                <button type="button" class="chip-btn active" data-bet="50">${getIcon('coin', 13)} 50 Tokens</button>
+                <button type="button" class="chip-btn" data-bet="100">${getIcon('coin', 13)} 100 Tokens</button>
+                <button type="button" class="chip-btn" data-bet="250">${getIcon('coin', 13)} 250 Tokens</button>
               </div>
             </div>
 
             <!-- Primary Action Buttons -->
             <div style="display: flex; gap: 1rem; margin-top: 2rem; flex-wrap: wrap;">
               <button id="joinQueueBtn" class="btn btn-primary" style="flex: 2; min-width: 220px; padding: 0.85rem 1.5rem; font-size: 1rem;">
-                ⚡ Quick Match (Queue)
+                ${getIcon('zap', 16)} Quick Match (Queue)
               </button>
               <button id="playBotBtn" class="btn btn-secondary" style="flex: 1; min-width: 200px; padding: 0.85rem 1.25rem; font-size: 1rem;">
-                🤖 Practice vs RobinBot
+                ${getIcon('bot', 16)} Practice vs RobinBot
               </button>
             </div>
 
@@ -209,7 +210,9 @@ export const LobbyModule = {
             <div id="queueStatusBox" class="hidden" style="margin-top: 2rem; padding: 1.75rem; background: var(--surface-secondary); border: 1px solid var(--border-medium); border-radius: var(--radius-lg); text-align: center;">
               <div class="radar-scanner">
                 <div class="radar-beam"></div>
-                <div style="font-size: 1.75rem; z-index: 2;">📡</div>
+                <div style="z-index: 2; color: var(--accent-primary); display: flex; align-items: center; justify-content: center;">
+                  ${getIcon('radio', 32)}
+                </div>
               </div>
               <div id="queueStatusText" style="font-weight: 700; color: var(--accent-primary); font-size: 1.1rem;">
                 Searching for opponents...
@@ -227,7 +230,7 @@ export const LobbyModule = {
           <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
             <div>
               <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
-                <span style="font-size: 1.2rem;">🏠</span>
+                <span style="color: var(--accent-primary); display: inline-flex;">${getIcon('room', 20)}</span>
                 <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-primary);">
                   Private Game Rooms
                 </h3>
@@ -238,7 +241,7 @@ export const LobbyModule = {
 
               <div class="form-group">
                 <button id="createRoomBtn" class="btn btn-secondary" style="width: 100%; padding: 0.75rem 1rem;">
-                  ➕ Create Custom Room
+                  ${getIcon('plus', 16)} Create Custom Room
                 </button>
               </div>
 
@@ -260,7 +263,7 @@ export const LobbyModule = {
             </div>
 
             <div id="proTipBox" style="margin-top: 2rem; padding: 1rem; background: var(--surface-secondary); border-radius: var(--radius-md); border: 1px solid var(--border-subtle); font-size: 0.82rem; color: var(--text-secondary); line-height: 1.45;">
-              💡 <strong>Pro-Tip:</strong> Win up to 2x your wager! Land on ladders to zoom ahead and dodge tricky snakes.
+              <span style="color: var(--accent-primary); display: inline-flex; vertical-align: middle; margin-right: 4px;">${getIcon('sparkles', 15)}</span> <strong>Pro-Tip:</strong> Win up to 2x your wager! Land on ladders to zoom ahead and dodge tricky snakes.
             </div>
           </div>
         </div>
@@ -270,9 +273,9 @@ export const LobbyModule = {
           <div class="modal-content" style="max-width: 780px; max-height: 85vh; overflow-y: auto; text-align: left; padding: 2rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-glass); padding-bottom: 1rem; margin-bottom: 1.25rem;">
               <h2 style="font-size: 1.4rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem; color: #34d399;">
-                <span>🇿🇦</span> South African Khasino (Kasi Kasino) Rules Guide
+                <span>${getIcon('cards', 20)}</span> South African Khasino (Kasi Kasino) Rules Guide
               </h2>
-              <button type="button" id="closeLobbyRulesBtn" class="btn btn-secondary" style="font-size: 0.85rem; padding: 0.35rem 0.75rem;">✕ Close</button>
+              <button type="button" id="closeLobbyRulesBtn" class="btn btn-secondary" style="font-size: 0.85rem; padding: 0.35rem 0.75rem;">${getIcon('x', 14)} Close</button>
             </div>
 
             <div style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; display: flex; flex-direction: column; gap: 1.25rem;">
@@ -282,7 +285,7 @@ export const LobbyModule = {
 
               <div>
                 <h4 style="color: #ffffff; font-weight: 700; margin-bottom: 0.35rem;">1. Deck & Player Setup</h4>
-                <p>• <strong>Deck:</strong> Exactly 40 cards (♠, ♥, ♦, ♣; Ranks: A, 2, 3, 4, 5, 6, 7, 8, 9, 10). Ace = 1.<br>
+                <p>• <strong>Deck:</strong> Exactly 40 cards (Spades, Hearts, Diamonds, Clubs; Ranks: A, 2, 3, 4, 5, 6, 7, 8, 9, 10). Ace = 1.<br>
                    • <strong>2-Player:</strong> 10 cards each in Deal 1 (0 floor cards). Once played out, a second 10-card deal is dealt. (11-pt mode).<br>
                    • <strong>3-Player:</strong> 13 cards each, 1 face-up card on floor. (7-pt mode).<br>
                    • <strong>4-Player Singles:</strong> 10 cards each, 0 floor cards. (7-pt mode).<br>
@@ -293,12 +296,12 @@ export const LobbyModule = {
                 <h4 style="color: #ffffff; font-weight: 700; margin-bottom: 0.35rem;">2. Capturing (Chow) & Sweeps</h4>
                 <p>• Play 1 card from hand to capture matching floor cards, or combinations of cards that sum to your card's value.<br>
                    • You can capture multiple groups simultaneously with one played card (e.g. played 7 captures a 7 AND a 3+4).<br>
-                   • <strong>Sweep (★):</strong> If your capture clears all floor cards and builds from the table, you score +1 Sweep point!</p>
+                   • <strong>Sweep:</strong> If your capture clears all floor cards and builds from the table, you score +1 Sweep point!</p>
               </div>
 
               <div>
                 <h4 style="color: #ffffff; font-weight: 700; margin-bottom: 0.35rem;">3. Simple Builds vs Compound Builds</h4>
-                <p>• <strong>Simple Build:</strong> Combine floor cards with 1 card from hand into a declared value (≤ 10). <em>Crucial rule:</em> You must retain another card in your hand matching the declared value! Small card rests on top.<br>
+                <p>• <strong>Simple Build:</strong> Combine floor cards with 1 card from hand into a declared value (&le; 10). <em>Crucial rule:</em> You must retain another card in your hand matching the declared value! Small card rests on top.<br>
                    • <strong>Compound (Augmented) Build:</strong> Add another valid group independently summing to the same capture value. <em>Compound builds lock their capture value permanently</em>—opponents cannot alter a compound build's value!</p>
               </div>
 
@@ -328,7 +331,7 @@ export const LobbyModule = {
                     <tr><td style="padding: 4px 8px;">Each Ace</td><td style="padding: 4px 8px; text-align: center; color: #fbbf24; font-weight: 700;">1 ea</td><td>4 points total across all aces</td></tr>
                     <tr><td style="padding: 4px 8px;">Most Cards (21+)</td><td style="padding: 4px 8px; text-align: center; color: #fbbf24; font-weight: 700;">2</td><td>11-pt modes only (1-1 on 20-20 tie)</td></tr>
                     <tr><td style="padding: 4px 8px;">Most Spades (6+)</td><td style="padding: 4px 8px; text-align: center; color: #fbbf24; font-weight: 700;">2</td><td>11-pt modes only (1-1 on 5-5 tie)</td></tr>
-                    <tr><td style="padding: 4px 8px;">Each Sweep (★)</td><td style="padding: 4px 8px; text-align: center; color: #fbbf24; font-weight: 700;">1 ea</td><td>Awarded on board clears</td></tr>
+                    <tr><td style="padding: 4px 8px;">Each Sweep</td><td style="padding: 4px 8px; text-align: center; color: #fbbf24; font-weight: 700;">1 ea</td><td>Awarded on board clears</td></tr>
                   </table>
                 </div>
               </div>
@@ -347,9 +350,9 @@ export const LobbyModule = {
           <div class="modal-content" style="max-width: 780px; max-height: 85vh; overflow-y: auto; text-align: left; padding: 2rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-glass); padding-bottom: 1rem; margin-bottom: 1.25rem;">
               <h2 style="font-size: 1.4rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem; color: #F59E0B;">
-                <span>♟️</span> Ludo Master Arena Rules Guide
+                <span>${getIcon('ludo', 20)}</span> Ludo Master Arena Rules Guide
               </h2>
-              <button type="button" id="closeLobbyLudoRulesBtn" class="btn btn-secondary" style="font-size: 0.85rem; padding: 0.35rem 0.75rem;">✕ Close</button>
+              <button type="button" id="closeLobbyLudoRulesBtn" class="btn btn-secondary" style="font-size: 0.85rem; padding: 0.35rem 0.75rem;">${getIcon('x', 14)} Close</button>
             </div>
 
             <div style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; display: flex; flex-direction: column; gap: 1.25rem;">
@@ -374,7 +377,7 @@ export const LobbyModule = {
               <div>
                 <h4 style="color: #ffffff; font-weight: 700; margin-bottom: 0.35rem;">3. Captures & Safe Squares</h4>
                 <p>• Landing on an opponent's token on any standard track square <strong>captures it</strong>, sending it back to their yard.<br>
-                   • <strong>Safe Squares:</strong> The 4 starting squares and the 4 star squares (marked with ⭐) are safe. Tokens cannot be captured on safe squares.<br>
+                   • <strong>Safe Squares:</strong> The 4 starting squares and the 4 star squares (marked with sanctuary stars) are safe. Tokens cannot be captured on safe squares.<br>
                    • Friendly tokens never capture each other.</p>
               </div>
 
@@ -408,11 +411,11 @@ export const LobbyModule = {
     };
 
     const proTips = {
-      snl: '💡 <strong>Pro-Tip:</strong> Win up to 2x your wager! Land on ladders to zoom ahead and dodge tricky snakes.',
-      crazy8: '💡 <strong>Crazy 8s Tip:</strong> Save your 8s for when you have no valid suit or rank to call the dominant suit in your hand!',
-      uno: '💡 <strong>Uno Tip:</strong> Disrupt opponent turns using Skip and Reverse cards. Chain +2 and +4 cards to force heavy card draws!',
-      khasino: '🇿🇦 <strong>Khasino Pro-Tip:</strong> 10♦ (Mummy) is worth 2 points, 2♠ (Spy Two) is worth 1 point! Hold matching cards to Chow builds or combine floor cards.',
-      ludo: '♟️ <strong>Ludo Tip:</strong> Roll a 6 to bring tokens out of your yard! Land on opponent pieces to send them back, and seek refuge on safe star squares.'
+      snl: `${getIcon('sparkles', 15)} <strong>Pro-Tip:</strong> Win up to 2x your wager! Land on ladders to zoom ahead and dodge tricky snakes.`,
+      crazy8: `${getIcon('sparkles', 15)} <strong>Crazy 8s Tip:</strong> Save your 8s for when you have no valid suit or rank to call the dominant suit in your hand!`,
+      uno: `${getIcon('sparkles', 15)} <strong>Uno Tip:</strong> Disrupt opponent turns using Skip and Reverse cards. Chain +2 and +4 cards to force heavy card draws!`,
+      khasino: `${getIcon('sparkles', 15)} <strong>Khasino Pro-Tip:</strong> 10 of Diamonds (Mummy) is worth 2 points, 2 of Spades (Spy Two) is worth 1 point! Hold matching cards to Chow builds or combine floor cards.`,
+      ludo: `${getIcon('sparkles', 15)} <strong>Ludo Tip:</strong> Roll a 6 to bring tokens out of your yard! Land on opponent pieces to send them back, and seek refuge on safe star squares.`
     };
 
     let selectedKhasinoMode = 'TWO_PLAYER';
@@ -708,10 +711,10 @@ export const LobbyModule = {
           if (m) {
             const teamBadge = (room.khasinoMode === 'FOUR_PLAYER_PARTNERSHIPS') ?
               `<span class="team-pill ${m.teamId === 1 ? 'team-1-pill' : 'team-2-pill'}">Team ${m.teamId}</span>` : '';
-            const hostBadge = m.isHost ? '<span style="font-size: 0.95rem;" title="Room Host">👑</span>' : '';
+            const hostBadge = m.isHost ? `<span style="color: #fbbf24; display: inline-flex;" title="Room Host">${getIcon('crown', 14)}</span>` : '';
             const readyBadge = m.isHost ?
-              '<span class="status-tag ready">👑 Host</span>' :
-              (m.isReady ? '<span class="status-tag ready">🟢 Ready</span>' : '<span class="status-tag not-ready">🟡 Not Ready</span>');
+              `<span class="status-tag ready">${getIcon('crown', 12)} Host</span>` :
+              (m.isReady ? `<span class="status-tag ready"><span style="color: #34d399; margin-right: 4px;">●</span> Ready</span>` : `<span class="status-tag not-ready"><span style="color: #fbbf24; margin-right: 4px;">●</span> Waiting</span>`);
 
             memberRowsHtml += `
               <div class="participant-item ${m.isHost ? 'is-host' : ''}">
@@ -760,18 +763,18 @@ export const LobbyModule = {
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
               <div>
                 <span class="game-badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; margin-bottom: 0.35rem;">
-                  🎮 Live Waiting Lobby
+                  ${getIcon('gamepad', 14)} Live Waiting Lobby
                 </span>
                 <h2 style="font-size: 1.5rem; font-weight: 800; color: #ffffff;">
                   ${gameDisplayName}
                 </h2>
                 <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">
-                  Wager: <strong style="color: #fbbf24;">${room.wagerAmount} 🪙</strong> • Max Players: <strong>${room.maxPlayers}</strong>
+                  Wager: <strong style="color: #fbbf24;">${room.wagerAmount} ${getIcon('coin', 12)}</strong> • Max Players: <strong>${room.maxPlayers}</strong>
                   ${room.khasinoMode ? ' • Mode: <strong style="color: #34d399;">' + room.khasinoMode + '</strong>' : ''}
                 </div>
               </div>
               <button id="closeWaitingRoomBtn" class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.3rem 0.65rem;">
-                ✕ Close
+                ${getIcon('x', 14)} Close
               </button>
             </div>
 
@@ -783,7 +786,7 @@ export const LobbyModule = {
               <div class="room-code-container">
                 <span class="room-code-badge" id="lobbyRoomCodeVal">${room.roomCode}</span>
                 <button type="button" id="copyCodeBtn" class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.4rem 0.85rem;">
-                  📋 Copy Code
+                  ${getIcon('scroll', 14)} Copy Code
                 </button>
               </div>
             </div>
@@ -794,8 +797,8 @@ export const LobbyModule = {
                 <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary);">
                   Participants (${room.members.length} / ${room.maxPlayers})
                 </span>
-                <span style="font-size: 0.75rem; color: ${allReady ? '#34d399' : '#fbbf24'}; font-weight: 700;">
-                  ${allReady ? '✓ All Players Ready' : 'Waiting for ready status...'}
+                <span style="font-size: 0.75rem; color: ${allReady ? '#34d399' : '#fbbf24'}; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+                  ${allReady ? getIcon('check', 14) + ' All Players Ready' : 'Waiting for ready status...'}
                 </span>
               </div>
               <div class="participant-list">
@@ -807,17 +810,17 @@ export const LobbyModule = {
             <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem; flex-wrap: wrap;">
               ${isHost ? `
                 <button id="hostStartMatchBtn" class="btn btn-primary" style="flex: 2; min-width: 180px;" ${allReady ? '' : 'disabled'}>
-                  ▶️ Start Match (${room.members.length}/${room.maxPlayers})
+                  Start Match (${room.members.length}/${room.maxPlayers})
                 </button>
                 <button id="hostBotFillBtn" class="btn btn-violet" style="flex: 1; min-width: 150px;">
-                  🤖 Fill Bots & Start
+                  ${getIcon('bot', 16)} Fill Bots & Start
                 </button>
                 <button id="hostDisbandBtn" class="btn btn-secondary" style="padding: 0.6rem 1rem;">
                   Disband
                 </button>
               ` : `
                 <button id="guestToggleReadyBtn" class="btn ${isReady ? 'btn-secondary' : 'btn-primary'}" style="flex: 2; min-width: 180px;">
-                  ${isReady ? '✓ Ready (Click to cancel)' : 'Ready Up!'}
+                  ${isReady ? getIcon('check', 14) + ' Ready (Click to cancel)' : 'Ready Up!'}
                 </button>
                 <button id="guestLeaveBtn" class="btn btn-secondary" style="flex: 1; min-width: 120px;">
                   Leave Room

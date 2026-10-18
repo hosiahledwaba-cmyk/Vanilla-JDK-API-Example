@@ -1,8 +1,9 @@
 // client/web vanilla/scripts/game.js
+import { getIcon, getSvgDice } from './icons.js';
 
 let activeEventSource = null;
 
-const DICE_FACES = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+const DICE_FACES = ['1', '2', '3', '4', '5', '6'];
 const TOKEN_COLORS = ['token-0', 'token-1', 'token-2', 'token-3'];
 
 export function setupForfeitLeaveButton(sessionId, token, isOverFn) {
@@ -28,7 +29,7 @@ export function setupForfeitLeaveButton(sessionId, token, isOverFn) {
     modal.style.zIndex = '200';
     modal.innerHTML = `
       <div class="forfeit-modal-box">
-        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">⚠️</div>
+        <div style="display: flex; justify-content: center; margin-bottom: 0.75rem; color: #ef4444;">${getIcon('alert', 48)}</div>
         <h3 style="font-size: 1.35rem; font-weight: 800; color: #f87171; margin-bottom: 0.5rem;">
           Confirm Forfeit & Exit
         </h3>
@@ -117,7 +118,7 @@ async function renderSnakesAndLadders(sessionId, token, userEmail, sessionMeta) 
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
         <div>
           <h2 style="font-size: 1.5rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem;">
-            <span>🎲</span> Snakes & Ladders
+            <span>${getIcon('dice', 22, '', 'color: var(--accent-cyan);')}</span> Snakes & Ladders
           </h2>
           <div style="font-size: 0.85rem; color: var(--text-secondary); font-family: var(--font-mono);">
             Match ID: <span style="color: var(--accent-cyan);">${sessionId.substring(0, 8)}...</span>
@@ -143,9 +144,9 @@ async function renderSnakesAndLadders(sessionId, token, userEmail, sessionMeta) 
 
           <!-- 3D Animated Dice Stage -->
           <div class="dice-stage">
-            <div id="diceBox" class="dice-box">🎲</div>
+            <div id="diceBox" class="dice-box">${getSvgDice(1, 40, '#42D9D0')}</div>
             <button id="rollDiceBtn" class="btn btn-primary" style="width: 100%; font-size: 1.1rem; padding: 0.85rem;" disabled>
-              🎲 Roll Dice
+              <span style="display: inline-flex; align-items: center; gap: 0.5rem;">${getIcon('dice', 18)} Roll Dice</span>
             </button>
           </div>
 
@@ -172,7 +173,7 @@ async function renderSnakesAndLadders(sessionId, token, userEmail, sessionMeta) 
       <!-- Victory / Game Over Modal -->
       <div id="gameOverModal" class="modal-overlay hidden">
         <div class="modal-content">
-          <div id="modalIcon" style="font-size: 3.5rem; margin-bottom: 0.5rem;">🏆</div>
+          <div id="modalIcon" style="display: flex; justify-content: center; margin-bottom: 0.75rem; color: #fbbf24;">${getIcon('trophy', 56)}</div>
           <h2 id="modalTitle" style="font-size: 1.8rem; font-weight: 800; margin-bottom: 0.5rem;">VICTORY!</h2>
           <p id="modalDesc" style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 1rem;">
             Congratulations! You reached cell 100 first!
@@ -256,14 +257,14 @@ async function renderSnakesAndLadders(sessionId, token, userEmail, sessionMeta) 
         let portalHtml = '';
         if (boardMeta.snakes && boardMeta.snakes[num]) {
           cell.classList.add('has-snake');
-          portalHtml = `<span class="portal-tag portal-snake">🐍 ${boardMeta.snakes[num]}</span>`;
+          portalHtml = `<span class="portal-tag portal-snake">${getIcon('snake', 12)} ${boardMeta.snakes[num]}</span>`;
         } else if (boardMeta.ladders && boardMeta.ladders[num]) {
           cell.classList.add('has-ladder');
-          portalHtml = `<span class="portal-tag portal-ladder">🪜 ${boardMeta.ladders[num]}</span>`;
+          portalHtml = `<span class="portal-tag portal-ladder">${getIcon('ladder', 12)} ${boardMeta.ladders[num]}</span>`;
         } else if (num === 1) {
-          portalHtml = `<span style="font-size: 0.65rem; color: #34d399; font-weight: 700;">🏁 START</span>`;
+          portalHtml = `<span style="font-size: 0.65rem; color: #34d399; font-weight: 700; display: inline-flex; align-items: center; gap: 2px;">${getIcon('flag', 11)} START</span>`;
         } else if (num === 100) {
-          portalHtml = `<span style="font-size: 0.65rem; color: #fbbf24; font-weight: 700;">🏆 GOAL</span>`;
+          portalHtml = `<span style="font-size: 0.65rem; color: #fbbf24; font-weight: 700; display: inline-flex; align-items: center; gap: 2px;">${getIcon('trophy', 11)} GOAL</span>`;
         }
 
         cell.innerHTML = `
@@ -328,19 +329,19 @@ async function renderSnakesAndLadders(sessionId, token, userEmail, sessionMeta) 
 
     if (gameState.isOver) {
       turnBanner.className = 'turn-banner opponent-turn';
-      turnBanner.innerHTML = '🏁 Match Finished';
+      turnBanner.innerHTML = `${getIcon('flag', 16)} Match Finished`;
       diceBtn.disabled = true;
       return;
     }
 
     if (isYourTurn) {
       turnBanner.className = 'turn-banner your-turn';
-      turnBanner.innerHTML = '👉 YOUR TURN! Roll the dice';
+      turnBanner.innerHTML = `${getIcon('pointer', 16)} YOUR TURN! Roll the dice`;
       diceBtn.disabled = false;
     } else {
       turnBanner.className = 'turn-banner opponent-turn';
       const opponentName = gameState.currentTurn || 'Opponent';
-      turnBanner.innerHTML = `⏳ ${opponentName} is rolling...`;
+      turnBanner.innerHTML = `${getIcon('refresh', 14)} ${opponentName} is rolling...`;
       diceBtn.disabled = true;
     }
   }
@@ -350,7 +351,7 @@ async function renderSnakesAndLadders(sessionId, token, userEmail, sessionMeta) 
     diceBtn.disabled = true;
 
     diceBox.classList.add('rolling');
-    diceBox.textContent = '🎲';
+    diceBox.innerHTML = getSvgDice(1, 40, '#42D9D0');
 
     try {
       const res = await fetch(`/games/snl/roll/${sessionId}`, {
@@ -365,7 +366,7 @@ async function renderSnakesAndLadders(sessionId, token, userEmail, sessionMeta) 
       setTimeout(() => {
         diceBox.classList.remove('rolling');
         if (data.roll) {
-          diceBox.textContent = DICE_FACES[data.roll - 1] || data.roll;
+          diceBox.innerHTML = getSvgDice(data.roll, 40, '#42D9D0');
         }
       }, 500);
 
@@ -412,20 +413,20 @@ async function renderSnakesAndLadders(sessionId, token, userEmail, sessionMeta) 
             diceBox.classList.add('rolling');
             setTimeout(() => {
               diceBox.classList.remove('rolling');
-              diceBox.textContent = DICE_FACES[roll - 1] || roll;
+              diceBox.innerHTML = getSvgDice(roll, 40, '#42D9D0');
             }, 500);
           }
 
           let extra = '';
           if (boardMeta.snakes && boardMeta.snakes[from + roll] === to) {
-            extra = ` — 🐍 Slid down a snake to ${to}!`;
+            extra = ` — Slid down a snake to ${to}!`;
             window.showToast(`${player} slid down a snake!`, 'error');
           } else if (boardMeta.ladders && boardMeta.ladders[from + roll] === to) {
-            extra = ` — 🪜 Climbed a ladder to ${to}!`;
+            extra = ` — Climbed a ladder to ${to}!`;
             window.showToast(`${player} climbed a ladder!`, 'success');
           }
 
-          appendFeed(`🎲 ${player} rolled ${roll} (Cell ${from} → ${to})${extra}`);
+          appendFeed(`${player} rolled ${roll} (Cell ${from} → ${to})${extra}`);
 
           updatePlayerTokens();
           updateTurnUI();
@@ -435,7 +436,7 @@ async function renderSnakesAndLadders(sessionId, token, userEmail, sessionMeta) 
           }
         } else if (data.type === 'forfeit') {
           const isYou = (data.player === userEmail);
-          appendFeed(`⚠️ ${data.player} forfeited the match.`);
+          appendFeed(`${data.player} forfeited the match.`);
           if (isYou) {
             window.showToast('You forfeited the match.', 'error');
           } else {
@@ -464,13 +465,13 @@ async function renderSnakesAndLadders(sessionId, token, userEmail, sessionMeta) 
     const modalDesc = document.getElementById('modalDesc');
 
     if (isWinner) {
-      modalIcon.textContent = '🎉';
+      modalIcon.innerHTML = getIcon('trophy', 60, '', 'color: #34d399;');
       modalTitle.textContent = 'MATCH WON!';
       modalTitle.style.color = '#34d399';
       modalDesc.textContent = 'Superb strategy! Your wager winnings have been deposited into your Token Wallet.';
       window.showToast('Congratulations! You won the game!', 'success');
     } else {
-      modalIcon.textContent = '🥈';
+      modalIcon.innerHTML = getIcon('medal', 60, '', 'color: #fbbf24;');
       modalTitle.textContent = 'MATCH FINISHED';
       modalTitle.style.color = '#fbbf24';
       modalDesc.textContent = `${winner} won the match. Good game!`;
@@ -491,7 +492,7 @@ async function renderSnakesAndLadders(sessionId, token, userEmail, sessionMeta) 
 async function renderCardGame(sessionId, token, userEmail, sessionMeta, isUno) {
   const app = document.getElementById('app');
   const gameTitle = isUno ? 'Uno Arena' : 'Crazy Eights';
-  const gameIcon = isUno ? '🌈' : '🎴';
+  const gameIcon = isUno ? getIcon('sparkles', 22, '', 'color: #38bdf8;') : getIcon('cards', 22, '', 'color: #a78bfa;');
 
   app.innerHTML = `
     <div>
@@ -502,7 +503,7 @@ async function renderCardGame(sessionId, token, userEmail, sessionMeta, isUno) {
           </h2>
           <div style="font-size: 0.85rem; color: var(--text-secondary); font-family: var(--font-mono);">
             Match ID: <span style="color: var(--accent-cyan);">${sessionId.substring(0, 8)}...</span> •
-            Wager: <span style="color: #fbbf24; font-weight: 700;">${sessionMeta ? sessionMeta.wager : 50} 🪙</span>
+            Wager: <span style="color: #fbbf24; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">${sessionMeta ? sessionMeta.wager : 50} ${getIcon('coin', 14, '', 'color: #fbbf24;')}</span>
           </div>
         </div>
         <button id="leaveMatchBtn" class="btn btn-secondary" style="font-size: 0.85rem; padding: 0.45rem 0.85rem;">
@@ -531,7 +532,7 @@ async function renderCardGame(sessionId, token, userEmail, sessionMeta, isUno) {
             <div class="deck-slot">
               <span class="deck-label">Draw Pile</span>
               <div id="drawDeckBtn" class="card-unit ${isUno ? 'uno-back' : 'c8-back'}" title="Click to draw a card">
-                ${isUno ? 'UNO' : '🂠'}
+                ${isUno ? 'UNO' : getIcon('cards', 24)}
               </div>
               <span id="drawDeckCountText" style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono);">
                 0 cards
@@ -543,16 +544,16 @@ async function renderCardGame(sessionId, token, userEmail, sessionMeta, isUno) {
           <div class="player-hand-container">
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 0.5rem;">
               <div style="font-weight: 700; font-size: 0.95rem; color: #ffffff; display: flex; align-items: center; gap: 0.5rem;">
-                <span>👤 Your Hand</span>
+                <span style="display: inline-flex; align-items: center; gap: 0.4rem;">${getIcon('user', 16)} Your Hand</span>
                 <span id="handCountBadge" class="opponent-card-count">0</span>
               </div>
 
               <div style="display: flex; gap: 0.5rem;">
                 <button id="drawActionBtn" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">
-                  ➕ Draw Card
+                  <span style="display: inline-flex; align-items: center; gap: 0.35rem;">${getIcon('plus', 14)} Draw Card</span>
                 </button>
                 <button id="passActionBtn" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">
-                  ⏭ Pass Turn
+                  <span style="display: inline-flex; align-items: center; gap: 0.35rem;">${getIcon('chevronRight', 14)} Pass Turn</span>
                 </button>
               </div>
             </div>
@@ -576,7 +577,7 @@ async function renderCardGame(sessionId, token, userEmail, sessionMeta, isUno) {
             </div>
             <div style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.45;">
               ${isUno ?
-                '• Match by <strong>Color</strong> or <strong>Symbol</strong>.<br>• <strong>★ Wild</strong> & <strong>+4</strong> can change colors.<br>• <strong>⊘ Skip</strong> & <strong>⇄ Reverse</strong> disrupt turns.<br>• Empty your hand to win the prize pool!' :
+                '• Match by <strong>Color</strong> or <strong>Symbol</strong>.<br>• <strong>Wild</strong> & <strong>+4</strong> can change colors.<br>• <strong>Skip</strong> & <strong>Reverse</strong> disrupt turns.<br>• Empty your hand to win the prize pool!' :
                 '• Match by <strong>Suit</strong> or <strong>Rank</strong>.<br>• <strong>8s are Wild!</strong> Play an 8 anytime to call a new suit.<br>• First player to discard all cards wins!'
               }
             </div>
@@ -603,16 +604,16 @@ async function renderCardGame(sessionId, token, userEmail, sessionMeta, isUno) {
           </p>
           <div class="picker-grid">
             <button class="picker-btn" data-suit="HEARTS" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border-color: rgba(239, 68, 68, 0.4);">
-              <span>♥</span> Hearts
+              <span style="display: inline-flex; align-items: center; gap: 0.35rem;">${getIcon('heart', 16, '', 'color: #ef4444;')} Hearts</span>
             </button>
             <button class="picker-btn" data-suit="DIAMONDS" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border-color: rgba(239, 68, 68, 0.4);">
-              <span>♦</span> Diamonds
+              <span style="display: inline-flex; align-items: center; gap: 0.35rem;">${getIcon('diamondSuit', 16, '', 'color: #ef4444;')} Diamonds</span>
             </button>
             <button class="picker-btn" data-suit="CLUBS" style="background: rgba(148, 163, 184, 0.15); color: #f8fafc; border-color: rgba(148, 163, 184, 0.4);">
-              <span>♣</span> Clubs
+              <span style="display: inline-flex; align-items: center; gap: 0.35rem;">${getIcon('club', 16, '', 'color: #94a3b8;')} Clubs</span>
             </button>
             <button class="picker-btn" data-suit="SPADES" style="background: rgba(148, 163, 184, 0.15); color: #f8fafc; border-color: rgba(148, 163, 184, 0.4);">
-              <span>♠</span> Spades
+              <span style="display: inline-flex; align-items: center; gap: 0.35rem;">${getIcon('spade', 16, '', 'color: #94a3b8;')} Spades</span>
             </button>
           </div>
         </div>
@@ -627,16 +628,16 @@ async function renderCardGame(sessionId, token, userEmail, sessionMeta, isUno) {
           </p>
           <div class="picker-grid">
             <button class="picker-btn" data-color="RED" style="background: #ef4444; color: #ffffff;">
-              <span>🔴</span> RED
+              <span style="display: inline-flex; align-items: center; gap: 0.4rem;"><span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #ffffff;"></span> RED</span>
             </button>
             <button class="picker-btn" data-color="BLUE" style="background: #2563eb; color: #ffffff;">
-              <span>🔵</span> BLUE
+              <span style="display: inline-flex; align-items: center; gap: 0.4rem;"><span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #ffffff;"></span> BLUE</span>
             </button>
             <button class="picker-btn" data-color="GREEN" style="background: #10b981; color: #ffffff;">
-              <span>🟢</span> GREEN
+              <span style="display: inline-flex; align-items: center; gap: 0.4rem;"><span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #ffffff;"></span> GREEN</span>
             </button>
             <button class="picker-btn" data-color="YELLOW" style="background: #f59e0b; color: #ffffff;">
-              <span>🟡</span> YELLOW
+              <span style="display: inline-flex; align-items: center; gap: 0.4rem;"><span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #ffffff;"></span> YELLOW</span>
             </button>
           </div>
         </div>
@@ -645,7 +646,7 @@ async function renderCardGame(sessionId, token, userEmail, sessionMeta, isUno) {
       <!-- Victory / Game Over Modal -->
       <div id="gameOverModal" class="modal-overlay hidden">
         <div class="modal-content">
-          <div id="modalIcon" style="font-size: 3.5rem; margin-bottom: 0.5rem;">🏆</div>
+          <div id="modalIcon" style="display: flex; justify-content: center; margin-bottom: 0.75rem; color: #fbbf24;">${getIcon('trophy', 56)}</div>
           <h2 id="modalTitle" style="font-size: 1.8rem; font-weight: 800; margin-bottom: 0.5rem;">VICTORY!</h2>
           <p id="modalDesc" style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 1rem;">
             Congratulations! You emptied your hand first!
@@ -707,7 +708,7 @@ async function renderCardGame(sessionId, token, userEmail, sessionMeta, isUno) {
     SKIP: '⊘',
     REVERSE: '⇄',
     DRAW_TWO: '+2',
-    WILD: '★',
+    WILD: 'W',
     WILD_DRAW_FOUR: '+4'
   };
 
@@ -723,7 +724,7 @@ async function renderCardGame(sessionId, token, userEmail, sessionMeta, isUno) {
         <span>${disp}</span>
         <span>${sym}</span>
       </div>
-      <div class="center-symbol">${card.isEight ? '★' : sym}</div>
+      <div class="center-symbol">${card.isEight ? '8' : sym}</div>
       <div class="corner-bottom">
         <span>${disp}</span>
         <span>${sym}</span>
@@ -755,13 +756,13 @@ async function renderCardGame(sessionId, token, userEmail, sessionMeta, isUno) {
     // 1. Turn Banner
     if (state.gameOver) {
       turnBanner.className = 'turn-banner opponent-turn';
-      turnBanner.innerHTML = `🏁 Game Over! Winner: <strong>${state.winnerId}</strong>`;
+      turnBanner.innerHTML = `${getIcon('flag', 16)} Game Over! Winner: <strong>${state.winnerId}</strong>`;
     } else if (isYourTurn) {
       turnBanner.className = 'turn-banner your-turn';
-      turnBanner.innerHTML = '👉 YOUR TURN! Play a card or draw';
+      turnBanner.innerHTML = `${getIcon('pointer', 16)} YOUR TURN! Play a card or draw`;
     } else {
       turnBanner.className = 'turn-banner opponent-turn';
-      turnBanner.innerHTML = `⏳ <strong>${state.currentTurn}</strong> is thinking...`;
+      turnBanner.innerHTML = `${getIcon('refresh', 14)} <strong>${state.currentTurn}</strong> is thinking...`;
     }
 
     // 2. Action buttons
@@ -785,11 +786,11 @@ async function renderCardGame(sessionId, token, userEmail, sessionMeta, isUno) {
             ${email}
           </div>
           <div style="font-size: 0.75rem; color: var(--text-muted);">
-            ${isOppTurn ? '⏳ Playing move...' : 'Waiting'}
+            ${isOppTurn ? 'Playing move...' : 'Waiting'}
           </div>
         </div>
         <span class="opponent-card-count" title="${count} cards in hand">
-          🂠 ${count}
+          <span style="display: inline-flex; align-items: center; gap: 4px;">${getIcon('cards', 12)} ${count}</span>
         </span>
       `;
       opponentsRow.appendChild(oppCard);
@@ -1015,7 +1016,7 @@ async function renderCardGame(sessionId, token, userEmail, sessionMeta, isUno) {
           if (data.state) {
             updateTableUI(data.state);
             if (data.state.lastAction) {
-              appendFeed(`🎴 ${data.state.lastAction}`);
+              appendFeed(data.state.lastAction);
             }
           }
 
@@ -1025,7 +1026,7 @@ async function renderCardGame(sessionId, token, userEmail, sessionMeta, isUno) {
           }
         } else if (data.type === 'forfeit') {
           const isYou = (data.player === userEmail);
-          appendFeed(`⚠️ ${data.player} forfeited the match.`);
+          appendFeed(`${data.player} forfeited the match.`);
           if (isYou) {
             window.showToast('You forfeited the match.', 'error');
           } else {
@@ -1062,13 +1063,13 @@ async function renderCardGame(sessionId, token, userEmail, sessionMeta, isUno) {
     const modalDesc = document.getElementById('modalDesc');
 
     if (isWinner) {
-      modalIcon.textContent = '🎉';
+      modalIcon.innerHTML = getIcon('trophy', 60, '', 'color: #34d399;');
       modalTitle.textContent = 'MATCH WON!';
       modalTitle.style.color = '#34d399';
       modalDesc.textContent = `Superb strategy! Your winnings have been deposited into your Token Wallet.`;
       window.showToast('Congratulations! You won the game!', 'success');
     } else {
-      modalIcon.textContent = '🥈';
+      modalIcon.innerHTML = getIcon('medal', 60, '', 'color: #fbbf24;');
       modalTitle.textContent = 'MATCH FINISHED';
       modalTitle.style.color = '#fbbf24';
       modalDesc.textContent = `${winner} won the match. Better luck next hand!`;
@@ -1130,18 +1131,18 @@ async function renderKhasinoGame(sessionId, token, userEmail, sessionMeta) {
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
         <div>
           <h2 style="font-size: 1.5rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem; color: #34d399;">
-            <span>🇿🇦</span> South African Khasino (Kasi Kasino)
+            <span>${getIcon('spade', 22, '', 'color: #34d399;')}</span> South African Khasino (Kasi Kasino)
           </h2>
           <div style="font-size: 0.85rem; color: var(--text-secondary); font-family: var(--font-mono); display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
             <span>Match: <strong style="color: var(--accent-cyan);">${sessionId.substring(0, 8)}...</strong></span> •
             <span id="khasinoModeDisplay" style="color: #60a5fa; font-weight: 700;">Loading setup...</span> •
-            <span>Wager: <strong style="color: #fbbf24;">${sessionMeta ? sessionMeta.wager : 50} 🪙</strong></span>
+            <span>Wager: <strong style="color: #fbbf24; display: inline-flex; align-items: center; gap: 4px;">${sessionMeta ? sessionMeta.wager : 50} ${getIcon('coin', 14, '', 'color: #fbbf24;')}</strong></span>
           </div>
         </div>
 
         <div style="display: flex; gap: 0.75rem;">
-          <button id="khasinoRulesBtn" class="btn btn-secondary" style="font-size: 0.85rem; padding: 0.45rem 0.85rem; border-color: rgba(16, 185, 129, 0.4); color: #34d399;">
-            📖 Rules Guide
+          <button id="khasinoRulesBtn" class="btn btn-secondary" style="font-size: 0.85rem; padding: 0.45rem 0.85rem; border-color: rgba(16, 185, 129, 0.4); color: #34d399; display: inline-flex; align-items: center; gap: 0.35rem;">
+            ${getIcon('book', 14)} Rules Guide
           </button>
           <button id="leaveMatchBtn" class="btn btn-secondary" style="font-size: 0.85rem; padding: 0.45rem 0.85rem;">
             ← Exit to Lobby
@@ -1161,7 +1162,7 @@ async function renderKhasinoGame(sessionId, token, userEmail, sessionMeta) {
             <!-- Active Builds Sub-Section -->
             <div>
               <div class="khasino-section-header">
-                <span>🎯 Active Builds on Table (<span id="buildCount">0</span>)</span>
+                <span style="display: inline-flex; align-items: center; gap: 0.35rem;">${getIcon('target', 15)} Active Builds on Table (<span id="buildCount">0</span>)</span>
                 <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: normal;">Click a build to target for chow, augment, or changing value</span>
               </div>
               <div id="khasinoBuildsGrid" class="khasino-builds-grid" style="margin-top: 0.5rem;">
@@ -1176,7 +1177,7 @@ async function renderKhasinoGame(sessionId, token, userEmail, sessionMeta) {
             <!-- Loose Cards Sub-Section -->
             <div>
               <div class="khasino-section-header">
-                <span>🃏 Loose Floor Cards (<span id="floorCount">0</span>)</span>
+                <span style="display: inline-flex; align-items: center; gap: 0.35rem;">${getIcon('cards', 15)} Loose Floor Cards (<span id="floorCount">0</span>)</span>
                 <span id="floorSelectionSummary" style="font-size: 0.7rem; color: #fbbf24; font-weight: 700;">0 selected (Sum: 0)</span>
               </div>
               <div id="khasinoFloorGrid" class="khasino-floor-grid" style="margin-top: 0.5rem;">
@@ -1210,22 +1211,22 @@ async function renderKhasinoGame(sessionId, token, userEmail, sessionMeta) {
 
             <div class="khasino-stage-actions">
               <button id="actionChowBtn" class="btn-khasino-chow" disabled title="Capture matching cards or sum combinations">
-                ⚡ Chow (Capture)
+                <span style="display: inline-flex; align-items: center; gap: 0.35rem;">${getIcon('zap', 14)} Chow (Capture)</span>
               </button>
               <button id="actionBuildBtn" class="btn-khasino-build" disabled title="Build floor cards + played card into a declared capture value">
-                🏗️ Simple Build
+                <span style="display: inline-flex; align-items: center; gap: 0.35rem;">${getIcon('layers', 14)} Simple Build</span>
               </button>
               <button id="actionAugmentBtn" class="btn-khasino-augment" disabled title="Add an independent group to an existing owned build">
-                ➕ Augment Build
+                <span style="display: inline-flex; align-items: center; gap: 0.35rem;">${getIcon('plus', 14)} Augment Build</span>
               </button>
               <button id="actionChangeBtn" class="btn-khasino-change" disabled title="Increase an opponent's build value and seize ownership">
-                🔄 Change Value
+                <span style="display: inline-flex; align-items: center; gap: 0.35rem;">${getIcon('refresh', 14)} Change Value</span>
               </button>
               <button id="actionDriftBtn" class="btn-khasino-drift" disabled title="Place played card onto the floor without capturing">
-                🍃 Drift (Trail)
+                <span style="display: inline-flex; align-items: center; gap: 0.35rem;">${getIcon('feather', 14)} Drift (Trail)</span>
               </button>
               <button id="actionClearBtn" class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.45rem 0.75rem;">
-                ✕ Clear
+                <span style="display: inline-flex; align-items: center; gap: 0.25rem;">${getIcon('x', 14)} Clear</span>
               </button>
             </div>
           </div>
@@ -1240,8 +1241,8 @@ async function renderKhasinoGame(sessionId, token, userEmail, sessionMeta) {
               </div>
               <div style="font-size: 0.8rem; color: var(--text-secondary); display: flex; gap: 1rem; flex-wrap: wrap;">
                 <span>Captured: <strong id="myCapturedCount" style="color: #34d399;">0</strong> cards</span>
-                <span>Spades: <strong id="mySpadesCount" style="color: #60a5fa;">0</strong> ♠</span>
-                <span>Sweeps: <strong id="mySweepCount" style="color: #fbbf24;">0</strong> ★</span>
+                <span>Spades: <strong id="mySpadesCount" style="color: #60a5fa;">0</strong></span>
+                <span>Sweeps: <strong id="mySweepCount" style="color: #fbbf24;">0</strong></span>
               </div>
             </div>
 
@@ -1259,7 +1260,7 @@ async function renderKhasinoGame(sessionId, token, userEmail, sessionMeta) {
           <!-- Smart Legal Actions Helper -->
           <div style="background: var(--surface-glass); border: 1px solid var(--border-glass); border-radius: var(--radius-md); padding: 1rem;">
             <div style="font-size: 0.8rem; font-weight: 800; text-transform: uppercase; color: #34d399; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
-              <span>💡 Recommended Legal Moves</span>
+              <span style="display: inline-flex; align-items: center; gap: 0.35rem;">${getIcon('sparkles', 15)} Recommended Legal Moves</span>
               <span id="helperModeText" style="font-size: 0.7rem; color: var(--text-muted); font-weight: normal;">(All available)</span>
             </div>
             <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
@@ -1274,8 +1275,8 @@ async function renderKhasinoGame(sessionId, token, userEmail, sessionMeta) {
 
           <!-- Scores & Card Majority Tracker -->
           <div style="background: var(--surface-glass); border: 1px solid var(--border-glass); border-radius: var(--radius-md); padding: 1rem;">
-            <div style="font-size: 0.8rem; font-weight: 800; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 0.75rem;">
-              📊 Match Statistics & Tallies
+            <div style="font-size: 0.8rem; font-weight: 800; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.35rem;">
+              ${getIcon('chart', 15)} Match Statistics & Tallies
             </div>
             <div id="khasinoScoresTracker" style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.82rem;"></div>
           </div>
@@ -1297,9 +1298,9 @@ async function renderKhasinoGame(sessionId, token, userEmail, sessionMeta) {
         <div class="modal-content" style="max-width: 780px; max-height: 85vh; overflow-y: auto; text-align: left; padding: 2rem;">
           <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-glass); padding-bottom: 1rem; margin-bottom: 1.25rem;">
             <h2 style="font-size: 1.4rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem; color: #34d399;">
-              <span>🇿🇦</span> South African Khasino (Kasi Kasino) Rules Guide
+              <span>${getIcon('book', 20, '', 'color: #34d399;')}</span> South African Khasino (Kasi Kasino) Rules Guide
             </h2>
-            <button type="button" id="closeRulesBtn" class="btn btn-secondary" style="font-size: 0.85rem; padding: 0.35rem 0.75rem;">✕ Close</button>
+            <button type="button" id="closeRulesBtn" class="btn btn-secondary" style="font-size: 0.85rem; padding: 0.35rem 0.75rem; display: inline-flex; align-items: center; gap: 0.25rem;">${getIcon('x', 14)} Close</button>
           </div>
 
           <div style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; display: flex; flex-direction: column; gap: 1.25rem;">
@@ -1320,7 +1321,7 @@ async function renderKhasinoGame(sessionId, token, userEmail, sessionMeta) {
               <h4 style="color: #ffffff; font-weight: 700; margin-bottom: 0.35rem;">2. Capturing (Chow)</h4>
               <p>• Match single floor cards of equal value, or combinations of loose cards that sum to your card's value.<br>
                  • Multiple matching groups can be captured simultaneously.<br>
-                 • <strong>Sweep (★):</strong> Clearing every single card and build from the board scores +1 Sweep point!</p>
+                 • <strong>Sweep:</strong> Clearing every single card and build from the board scores +1 Sweep point!</p>
             </div>
 
             <div>
@@ -1349,12 +1350,12 @@ async function renderKhasinoGame(sessionId, token, userEmail, sessionMeta) {
                   <th style="padding: 4px 8px; text-align: center;">Points</th>
                   <th style="padding: 4px 8px; text-align: left;">Rule</th>
                 </tr>
-                <tr><td style="padding: 4px 8px;">10♦ (Mummy)</td><td style="padding: 4px 8px; text-align: center; color: #fbbf24; font-weight: 700;">2</td><td>Decides match tiebreakers!</td></tr>
-                <tr><td style="padding: 4px 8px;">2♠ (Spy Two)</td><td style="padding: 4px 8px; text-align: center; color: #fbbf24; font-weight: 700;">1</td><td>The little casino spade</td></tr>
+                <tr><td style="padding: 4px 8px;">10 of Diamonds (Mummy)</td><td style="padding: 4px 8px; text-align: center; color: #fbbf24; font-weight: 700;">2</td><td>Decides match tiebreakers!</td></tr>
+                <tr><td style="padding: 4px 8px;">2 of Spades (Spy Two)</td><td style="padding: 4px 8px; text-align: center; color: #fbbf24; font-weight: 700;">1</td><td>The little casino spade</td></tr>
                 <tr><td style="padding: 4px 8px;">Each Ace</td><td style="padding: 4px 8px; text-align: center; color: #fbbf24; font-weight: 700;">1 ea</td><td>4 points total across all aces</td></tr>
                 <tr><td style="padding: 4px 8px;">Most Cards</td><td style="padding: 4px 8px; text-align: center; color: #fbbf24; font-weight: 700;">2</td><td>11-pt modes only (1-1 on tie)</td></tr>
                 <tr><td style="padding: 4px 8px;">Most Spades</td><td style="padding: 4px 8px; text-align: center; color: #fbbf24; font-weight: 700;">2</td><td>11-pt modes only (1-1 on tie)</td></tr>
-                <tr><td style="padding: 4px 8px;">Each Sweep (★)</td><td style="padding: 4px 8px; text-align: center; color: #fbbf24; font-weight: 700;">1 ea</td><td>Awarded on board clears</td></tr>
+                <tr><td style="padding: 4px 8px;">Each Sweep</td><td style="padding: 4px 8px; text-align: center; color: #fbbf24; font-weight: 700;">1 ea</td><td>Awarded on board clears</td></tr>
               </table>
             </div>
           </div>
@@ -1370,7 +1371,7 @@ async function renderKhasinoGame(sessionId, token, userEmail, sessionMeta) {
       <!-- End of Match Final Scorecard Modal -->
       <div id="khasinoScoreModal" class="modal-overlay hidden" style="z-index: 110;">
         <div class="modal-content" style="max-width: 640px; text-align: center; padding: 2rem;">
-          <div id="scoreModalIcon" style="font-size: 3.5rem; margin-bottom: 0.5rem;">🏆</div>
+          <div id="scoreModalIcon" style="display: flex; justify-content: center; margin-bottom: 0.75rem; color: #fbbf24;">${getIcon('trophy', 56)}</div>
           <h2 id="scoreModalTitle" style="font-size: 1.8rem; font-weight: 800; margin-bottom: 0.25rem;">MATCH FINISHED</h2>
           <p id="scoreModalWinnerDesc" style="color: #34d399; font-weight: 700; margin-bottom: 1.25rem; font-size: 1.05rem;">
             Winner: Determining...
@@ -1417,10 +1418,10 @@ async function renderKhasinoGame(sessionId, token, userEmail, sessionMeta) {
   function triggerSweepCelebration() {
     const banner = document.createElement('div');
     banner.className = 'sweep-celebration';
-    banner.innerHTML = `<span>★</span> SWEEP! +1 POINT <span>★</span>`;
+    banner.innerHTML = `<span style="display: inline-flex; align-items: center; gap: 0.5rem;">${getIcon('sparkles', 22)} SWEEP! +1 POINT ${getIcon('sparkles', 22)}</span>`;
     document.getElementById('khasinoTable').appendChild(banner);
     setTimeout(() => banner.remove(), 1800);
-    window.showToast('★ SWEEP! Cleared the entire board for +1 point!', 'success');
+    window.showToast('SWEEP! Cleared the entire board for +1 point!', 'success');
   }
 
   // --- Card UI Renderer ---
@@ -1444,9 +1445,9 @@ async function renderKhasinoGame(sessionId, token, userEmail, sessionMeta) {
 
     let badgeHtml = '';
     if (isMummy) {
-      badgeHtml = `<span class="khasino-card-special-badge badge-mummy">MUMMY 2★</span>`;
+      badgeHtml = `<span class="khasino-card-special-badge badge-mummy">MUMMY (+2)</span>`;
     } else if (isSpyTwo) {
-      badgeHtml = `<span class="khasino-card-special-badge badge-spy">SPY TWO 1★</span>`;
+      badgeHtml = `<span class="khasino-card-special-badge badge-spy">SPY TWO (+1)</span>`;
     }
 
     el.innerHTML = `
@@ -1724,13 +1725,13 @@ async function renderKhasinoGame(sessionId, token, userEmail, sessionMeta) {
     const turnBanner = document.getElementById('turnBanner');
     if (state.isOver) {
       turnBanner.className = 'turn-banner my-turn';
-      turnBanner.textContent = '🏁 Match Finished!';
+      turnBanner.innerHTML = `${getIcon('flag', 16)} Match Finished!`;
     } else if (isMyTurn) {
       turnBanner.className = 'turn-banner my-turn';
-      turnBanner.innerHTML = '👉 <strong>YOUR TURN TO PLAY</strong>';
+      turnBanner.innerHTML = `${getIcon('pointer', 16)} <strong>YOUR TURN TO PLAY</strong>`;
     } else {
       turnBanner.className = 'turn-banner opponent-turn';
-      turnBanner.innerHTML = `⏳ <span>${state.currentTurn || 'Opponent'} is thinking...</span>`;
+      turnBanner.innerHTML = `${getIcon('refresh', 14)} <span>${state.currentTurn || 'Opponent'} is thinking...</span>`;
     }
 
     // 1. Opponents Row
@@ -1773,7 +1774,7 @@ async function renderKhasinoGame(sessionId, token, userEmail, sessionMeta) {
       let teamHtml = '';
       if (oppTeam > 0) {
         const isPartner = (oppTeam === myTeam);
-        teamHtml = `<span style="font-size: 0.68rem; padding: 1px 6px; border-radius: 999px; font-weight: 700; ${isPartner ? 'background: rgba(16, 185, 129, 0.25); color: #34d399;' : 'background: rgba(239, 68, 68, 0.25); color: #f87171;'}">${isPartner ? '🤝 Partner' : '⚔️ Opponent'} (Team ${oppTeam})</span>`;
+        teamHtml = `<span style="font-size: 0.68rem; padding: 1px 6px; border-radius: 999px; font-weight: 700; display: inline-flex; align-items: center; gap: 3px; ${isPartner ? 'background: rgba(16, 185, 129, 0.25); color: #34d399;' : 'background: rgba(239, 68, 68, 0.25); color: #f87171;'}">${isPartner ? getIcon('handshake', 12) + ' Partner' : getIcon('swords', 12) + ' Opponent'} (Team ${oppTeam})</span>`;
       }
 
       let exposedCardHtml = '';
@@ -1789,7 +1790,7 @@ async function renderKhasinoGame(sessionId, token, userEmail, sessionMeta) {
               <div class="corner-top" style="font-size: 0.72rem;"><span>${disp}</span><span>${sym}</span></div>
               <div class="center-symbol" style="font-size: 1.1rem;">${sym}</div>
             </div>
-            <span style="font-size: 0.65rem; color: #fbbf24; font-weight: 700;">★ TOP PILE</span>
+            <span style="font-size: 0.65rem; color: #fbbf24; font-weight: 700;">TOP PILE</span>
           </div>
         `;
       } else {
@@ -1809,7 +1810,7 @@ async function renderKhasinoGame(sessionId, token, userEmail, sessionMeta) {
           <div style="font-size: 0.78rem; color: var(--text-secondary); display: flex; gap: 0.6rem;">
             <span>Hand: <strong style="color: #fbbf24;">${count}</strong></span>
             <span>Captured: <strong style="color: #34d399;">${oppCap.length}</strong></span>
-            <span>Sweeps: <strong style="color: #fbbf24;">${oppSw}</strong> ★</span>
+            <span>Sweeps: <strong style="color: #fbbf24;">${oppSw}</strong></span>
           </div>
         </div>
         ${exposedCardHtml}
@@ -1852,11 +1853,11 @@ async function renderKhasinoGame(sessionId, token, userEmail, sessionMeta) {
         bCard.className = `khasino-build-card ${isSelected ? 'selected-build' : ''}`;
 
         const isMine = (b.ownerId === userEmail);
-        const ownerLabel = isMine ? '👤 You' : `👤 ${b.ownerId}`;
+        const ownerLabel = isMine ? 'You' : b.ownerId;
 
         const badgeHtml = b.isCompound ?
-          `<span class="khasino-build-compound-badge">👑 Compound ${b.captureValue}</span>` :
-          `<span class="khasino-build-val-badge">🎯 Build ${b.captureValue}</span>`;
+          `<span class="khasino-build-compound-badge">${getIcon('crown', 12)} Compound ${b.captureValue}</span>` :
+          `<span class="khasino-build-val-badge">${getIcon('target', 12)} Build ${b.captureValue}</span>`;
 
         bCard.innerHTML = `
           <div class="khasino-build-header">
@@ -1986,19 +1987,19 @@ async function renderKhasinoGame(sessionId, token, userEmail, sessionMeta) {
       const chip = document.createElement('div');
       chip.className = 'khasino-helper-chip';
 
-      let icon = '⚡';
+      let iconName = 'zap';
       let badgeBg = 'background: rgba(16, 185, 129, 0.2); color: #34d399;';
       if (action.type === 'BUILD_SIMPLE') {
-        icon = '🏗️';
+        iconName = 'layers';
         badgeBg = 'background: rgba(59, 130, 246, 0.2); color: #60a5fa;';
       } else if (action.type === 'BUILD_COMPOUND') {
-        icon = '➕';
+        iconName = 'plus';
         badgeBg = 'background: rgba(139, 92, 246, 0.2); color: #c4b5fd;';
       } else if (action.type === 'CHANGE_BUILD_VALUE') {
-        icon = '🔄';
+        iconName = 'refresh';
         badgeBg = 'background: rgba(245, 158, 11, 0.2); color: #fbbf24;';
       } else if (action.type === 'DRIFT') {
-        icon = '🍃';
+        iconName = 'feather';
         badgeBg = 'background: rgba(148, 163, 184, 0.2); color: #94a3b8;';
       }
 
@@ -2016,7 +2017,7 @@ async function renderKhasinoGame(sessionId, token, userEmail, sessionMeta) {
 
       chip.innerHTML = `
         <div style="display: flex; align-items: center; gap: 0.5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-          <span>${icon}</span>
+          <span style="display: flex; align-items: center;">${getIcon(iconName, 14)}</span>
           <span style="font-weight: 600; font-size: 0.8rem; color: #ffffff;">${actionTitle}</span>
         </div>
         <span class="khasino-helper-badge" style="${badgeBg}; flex-shrink: 0;">${action.type.replace('_', ' ')}</span>
@@ -2050,13 +2051,13 @@ async function renderKhasinoGame(sessionId, token, userEmail, sessionMeta) {
       row.innerHTML = `
         <div style="display: flex; justify-content: space-between; font-weight: 700; color: #ffffff; margin-bottom: 0.25rem;">
           <span>${entityId === userEmail ? 'You' : entityId}</span>
-          <span style="color: #34d399;">${pile.length} cards (${spades} ♠)</span>
+          <span style="color: #34d399;">${pile.length} cards (${spades} Spades)</span>
         </div>
         <div style="font-size: 0.75rem; color: var(--text-secondary); display: flex; gap: 0.5rem; flex-wrap: wrap;">
           <span>Aces: <strong style="color: #ffffff;">${aces}</strong></span> •
-          <span>Mummy 10♦: <strong style="color: ${hasMummy ? '#fbbf24' : 'var(--text-muted)'};">${hasMummy ? '✓ YES' : '—'}</strong></span> •
-          <span>Spy 2♠: <strong style="color: ${hasSpy ? '#60a5fa' : 'var(--text-muted)'};">${hasSpy ? '✓ YES' : '—'}</strong></span> •
-          <span>Sweeps: <strong style="color: #fbbf24;">${sweeps} ★</strong></span>
+          <span>Mummy (10 Diamonds): <strong style="color: ${hasMummy ? '#fbbf24' : 'var(--text-muted)'}; display: inline-flex; align-items: center; gap: 2px;">${hasMummy ? `${getIcon('check', 13)} YES` : '—'}</strong></span> •
+          <span>Spy (2 Spades): <strong style="color: ${hasSpy ? '#60a5fa' : 'var(--text-muted)'}; display: inline-flex; align-items: center; gap: 2px;">${hasSpy ? `${getIcon('check', 13)} YES` : '—'}</strong></span> •
+          <span>Sweeps: <strong style="color: #fbbf24;">${sweeps}</strong></span>
         </div>
       `;
       tracker.appendChild(row);
@@ -2075,13 +2076,13 @@ async function renderKhasinoGame(sessionId, token, userEmail, sessionMeta) {
     const isWinner = (winner === userEmail || (winner && winner.startsWith('Team ') && state.playerTeams && state.playerTeams[userEmail] === (winner === 'Team 1' ? 1 : 2)));
 
     if (isWinner) {
-      iconEl.textContent = '🎉';
+      iconEl.innerHTML = getIcon('trophy', 60, '', 'color: #34d399;');
       titleEl.textContent = 'MATCH WON!';
       titleEl.style.color = '#34d399';
       winnerDesc.textContent = `Superb strategy! You won the South African Khasino match!`;
       window.showToast('Congratulations! You won the Khasino match!', 'success');
     } else {
-      iconEl.textContent = '🥈';
+      iconEl.innerHTML = getIcon('medal', 60, '', 'color: #fbbf24;');
       titleEl.textContent = 'MATCH CONCLUDED';
       titleEl.style.color = '#fbbf24';
       winnerDesc.textContent = `Winner: ${winner || 'Draw'}. Well played!`;
@@ -2103,8 +2104,8 @@ async function renderKhasinoGame(sessionId, token, userEmail, sessionMeta) {
     tableHtml += `</tr></thead><tbody>`;
 
     const rows = [
-      { label: '10♦ (Mummy) (+2)', key: 'mummyPoints' },
-      { label: '2♠ (Spy Two) (+1)', key: 'spyTwoPoints' },
+      { label: '10 of Diamonds (Mummy) (+2)', key: 'mummyPoints' },
+      { label: '2 of Spades (Spy Two) (+1)', key: 'spyTwoPoints' },
       { label: 'Aces (+1 ea)', key: 'acePoints' },
       { label: 'Most Cards (+2)', key: 'cardsPoints' },
       { label: 'Most Spades (+2)', key: 'spadesPoints' },
@@ -2169,7 +2170,7 @@ async function renderKhasinoGame(sessionId, token, userEmail, sessionMeta) {
         if (data.type === 'forfeit') {
           const forfeiter = data.player || data.forfeitedBy || 'An opponent';
           const isYou = (forfeiter === userEmail);
-          appendFeed(`⚠️ ${forfeiter} forfeited the match.`);
+          appendFeed(`${forfeiter} forfeited the match.`);
           if (isYou) {
             window.showToast('You forfeited the match.', 'error');
           } else {
@@ -2181,7 +2182,7 @@ async function renderKhasinoGame(sessionId, token, userEmail, sessionMeta) {
             const icon = document.getElementById('scoreModalIcon');
             const title = document.getElementById('scoreModalTitle');
             const desc = document.getElementById('scoreModalWinnerDesc');
-            if (icon) icon.textContent = isYou ? '🥈' : '🎉';
+            if (icon) icon.innerHTML = isYou ? getIcon('medal', 60, '', 'color: #fbbf24;') : getIcon('trophy', 60, '', 'color: #34d399;');
             if (title) {
               title.textContent = isYou ? 'FORFEITED MATCH' : 'MATCH WON (FORFEIT)!';
               title.style.color = isYou ? '#f87171' : '#34d399';
@@ -2194,7 +2195,7 @@ async function renderKhasinoGame(sessionId, token, userEmail, sessionMeta) {
           if (data.state) {
             renderKhasinoUI(data.state);
             if (data.state.lastAction) {
-              appendFeed(`🇿🇦 ${data.state.lastAction}`);
+              appendFeed(data.state.lastAction);
             }
           }
           fetchKhasinoState();
@@ -2259,11 +2260,11 @@ async function renderLudoGame(sessionId, token, userEmail, sessionMeta) {
           </a>
           <div>
             <div style="font-weight: 800; font-size: 1.15rem; color: #FFFFFF; display: flex; align-items: center; gap: 0.5rem;">
-              <span>♟️</span> Ludo Master Arena
+              <span>${getIcon('ludo', 20, '', 'color: #38bdf8;')}</span> Ludo Master Arena
             </div>
             <div style="font-size: 0.78rem; color: var(--text-muted);">
               Session: <span style="font-family: var(--font-mono);">${sessionId.substring(0, 8)}...</span>
-              • Wager: <span style="color: #FBBF24; font-weight: 700;">${sessionMeta ? sessionMeta.wager : 50} 🪙</span>
+              • Wager: <span style="color: #FBBF24; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">${sessionMeta ? sessionMeta.wager : 50} ${getIcon('coin', 14, '', 'color: #FBBF24;')}</span>
             </div>
           </div>
         </div>
@@ -2276,11 +2277,11 @@ async function renderLudoGame(sessionId, token, userEmail, sessionMeta) {
         </div>
 
         <div style="display: flex; gap: 0.5rem;">
-          <button id="ludoRulesBtn" class="btn btn-secondary btn-sm" title="View Ludo rules">
-            📖 Rules
+          <button id="ludoRulesBtn" class="btn btn-secondary btn-sm" title="View Ludo rules" style="display: inline-flex; align-items: center; gap: 0.35rem;">
+            ${getIcon('book', 14)} Rules
           </button>
-          <button id="leaveMatchBtn" class="btn btn-danger btn-sm" title="Forfeit or leave match">
-            🚪 Leave
+          <button id="leaveMatchBtn" class="btn btn-danger btn-sm" title="Forfeit or leave match" style="display: inline-flex; align-items: center; gap: 0.35rem;">
+            ${getIcon('logOut', 14)} Leave
           </button>
         </div>
       </div>
@@ -2301,13 +2302,13 @@ async function renderLudoGame(sessionId, token, userEmail, sessionMeta) {
               Authoritative Dice
             </div>
             <button id="ludoDiceBtn" class="ludo-dice-btn" title="Roll Dice">
-              ⚅
+              ${getSvgDice(6, 32)}
             </button>
             <div id="ludoDiceInstruction" style="font-size: 0.88rem; font-weight: 600; text-align: center; color: var(--text-secondary);">
               Waiting to roll...
             </div>
-            <div id="ludoSixBonusBadge" class="hidden" style="font-size: 0.75rem; font-weight: 700; color: #F59E0B; background: rgba(245, 158, 11, 0.15); padding: 3px 10px; border-radius: 12px; border: 1px solid rgba(245, 158, 11, 0.4);">
-              🔥 6 ROLLED! Bonus roll awarded!
+            <div id="ludoSixBonusBadge" class="hidden" style="font-size: 0.75rem; font-weight: 700; color: #F59E0B; background: rgba(245, 158, 11, 0.15); padding: 3px 10px; border-radius: 12px; border: 1px solid rgba(245, 158, 11, 0.4); display: inline-flex; align-items: center; gap: 4px;">
+              ${getIcon('flame', 14)} 6 ROLLED! Bonus roll awarded!
             </div>
           </div>
 
@@ -2323,7 +2324,7 @@ async function renderLudoGame(sessionId, token, userEmail, sessionMeta) {
           <div class="card" style="padding: 1.25rem;">
             <div style="font-size: 0.82rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.5rem; display: flex; justify-content: space-between;">
               <span>Live Action Log</span>
-              <span style="color: var(--accent-primary); font-size: 0.75rem;">⚡ Real-Time</span>
+              <span style="color: var(--accent-primary); font-size: 0.75rem; display: inline-flex; align-items: center; gap: 3px;">${getIcon('zap', 12)} Real-Time</span>
             </div>
             <div class="ludo-event-log" id="ludoEventLog">
               <div class="ludo-log-item">Ludo match loaded.</div>
@@ -2338,15 +2339,15 @@ async function renderLudoGame(sessionId, token, userEmail, sessionMeta) {
       <div class="modal-content" style="max-width: 680px; max-height: 85vh; overflow-y: auto; text-align: left; padding: 2rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-medium); padding-bottom: 1rem; margin-bottom: 1.25rem;">
           <h3 style="font-size: 1.3rem; font-weight: 800; color: #F59E0B; display: flex; align-items: center; gap: 0.5rem;">
-            <span>♟️</span> Ludo Arena Rules
+            <span>${getIcon('ludo', 18, '', 'color: #F59E0B;')}</span> Ludo Arena Rules
           </h3>
-          <button id="closeLudoGameRulesBtn" class="btn btn-secondary btn-sm">✕ Close</button>
+          <button id="closeLudoGameRulesBtn" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 4px;">${getIcon('x', 14)} Close</button>
         </div>
         <div style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6; display: flex; flex-direction: column; gap: 1rem;">
           <p>• <strong>Yard Exit:</strong> You must roll a <strong>6</strong> to bring a token out of your starting yard onto the track.</p>
           <p>• <strong>Extra Roll:</strong> Rolling a 6 grants a bonus roll on the same turn. If you roll <strong>3 consecutive sixes</strong>, your turn ends immediately without a move!</p>
           <p>• <strong>Captures:</strong> Landing on an opponent token on any standard track square captures it, sending it back to their yard.</p>
-          <p>• <strong>Safe Squares:</strong> The 4 starting squares and the 4 star squares (marked with ★) are safe from captures.</p>
+          <p>• <strong>Safe Squares:</strong> The 4 starting squares and the 4 star squares (marked with golden stars) are safe from captures.</p>
           <p>• <strong>Home Finish:</strong> After completing the circuit, tokens enter your color's private home path. Reaching the center requires an <strong>exact roll</strong>. First player to bring all 4 tokens home wins!</p>
         </div>
       </div>
@@ -2430,7 +2431,7 @@ async function renderLudoGame(sessionId, token, userEmail, sessionMeta) {
         <polygon points="0,100 50,50 100,100" fill="rgba(59, 130, 246, 0.45)" stroke="#3B82F6" stroke-width="1.5" />
       </svg>
       <div class="ludo-center-trophy">
-        <span>🏆</span>
+        <span style="color: #FBBF24; display: flex; align-items: center; justify-content: center;">${getIcon('trophy', 18)}</span>
         <span class="ludo-center-finished-count" id="ludoCenterFinishCount">0/4 Home</span>
       </div>
     `;
@@ -2506,15 +2507,15 @@ async function renderLudoGame(sessionId, token, userEmail, sessionMeta) {
     const turnText = document.getElementById('ludoTurnText');
     if (turnText) {
       if (state.gameOver) {
-        turnText.innerHTML = `🏆 <strong style="color: #FBBF24;">${state.winnerId || 'Winner'}</strong> won the match!`;
+        turnText.innerHTML = `<span style="display: inline-flex; align-items: center; gap: 4px;">${getIcon('trophy', 16, '', 'color: #FBBF24;')} <strong style="color: #FBBF24;">${state.winnerId || 'Winner'}</strong> won the match!</span>`;
       } else if (isMyTurn) {
         if (state.phase === 'WAITING_FOR_ROLL') {
-          turnText.innerHTML = `🎲 <strong style="color: #42D9D0;">Your Turn!</strong> Roll the dice.`;
+          turnText.innerHTML = `<span style="display: inline-flex; align-items: center; gap: 4px;">${getIcon('dice', 16, '', 'color: #42D9D0;')} <strong style="color: #42D9D0;">Your Turn!</strong> Roll the dice.</span>`;
         } else {
-          turnText.innerHTML = `🎯 <strong style="color: #42D9D0;">Rolled a ${state.currentRoll}!</strong> Click a highlighted token.`;
+          turnText.innerHTML = `<span style="display: inline-flex; align-items: center; gap: 4px;">${getIcon('target', 16, '', 'color: #42D9D0;')} <strong style="color: #42D9D0;">Rolled a ${state.currentRoll}!</strong> Click a highlighted token.</span>`;
         }
       } else {
-        turnText.innerHTML = `⏳ <strong style="color: ${activeColorHex};">${state.currentTurnPlayer}</strong> (${activeColorName}) is playing...`;
+        turnText.innerHTML = `<span style="display: inline-flex; align-items: center; gap: 4px;">${getIcon('refresh', 14)} <strong style="color: ${activeColorHex};">${state.currentTurnPlayer}</strong> (${activeColorName}) is playing...</span>`;
       }
     }
 
@@ -2525,7 +2526,7 @@ async function renderLudoGame(sessionId, token, userEmail, sessionMeta) {
 
     if (diceBtn && !isRolling) {
       const rollVal = state.currentRoll || 1;
-      diceBtn.textContent = DICE_FACES[Math.max(0, Math.min(5, rollVal - 1))];
+      diceBtn.innerHTML = getSvgDice(rollVal, 32);
 
       if (isMyTurn && state.phase === 'WAITING_FOR_ROLL' && !state.gameOver) {
         diceBtn.disabled = false;
@@ -2636,7 +2637,7 @@ async function renderLudoGame(sessionId, token, userEmail, sessionMeta) {
         row.innerHTML = `
           <div>
             <div style="font-weight: 700; font-size: 0.9rem; color: #FFFFFF; display: flex; align-items: center; gap: 0.4rem;">
-              <span>${p.id === userEmail ? '👤 You' : (p.id.includes('Bot') || p.id.includes('CPU') ? '🤖 ' + p.name : p.name)}</span>
+              <span>${p.id === userEmail ? `<span style="display: inline-flex; align-items: center; gap: 4px;">${getIcon('user', 14)} You</span>` : (p.id.includes('Bot') || p.id.includes('CPU') ? `<span style="display: inline-flex; align-items: center; gap: 4px;">${getIcon('bot', 14)} ${p.name}</span>` : p.name)}</span>
               ${isCurrent ? '<span style="font-size: 0.72rem; color: #42D9D0; background: rgba(66,217,208,0.15); padding: 1px 6px; border-radius: 8px;">Active</span>' : ''}
             </div>
             <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">
@@ -2671,7 +2672,7 @@ async function renderLudoGame(sessionId, token, userEmail, sessionMeta) {
     modal.style.zIndex = '250';
     modal.innerHTML = `
       <div class="forfeit-modal-box" style="border-color: ${isWinner ? 'var(--accent-primary)' : 'var(--border-medium)'}; text-align: center;">
-        <div style="font-size: 3.5rem; margin-bottom: 0.5rem;">${isWinner ? '🏆' : '♟️'}</div>
+        <div style="display: flex; justify-content: center; margin-bottom: 0.75rem; color: ${isWinner ? '#FBBF24' : 'var(--text-muted)'};">${getIcon(isWinner ? 'trophy' : 'ludo', 56)}</div>
         <h2 style="font-size: 1.6rem; font-weight: 800; color: #FFFFFF; margin-bottom: 0.5rem;">
           ${isWinner ? 'Match Victory!' : 'Match Finished!'}
         </h2>
@@ -2679,11 +2680,11 @@ async function renderLudoGame(sessionId, token, userEmail, sessionMeta) {
           ${isWinner ? 'Congratulations! You brought all 4 tokens safely into the Home center!' : `${winner} brought all 4 tokens home and claimed the victory.`}
         </p>
         <div style="display: flex; gap: 0.75rem; justify-content: center;">
-          <button id="ludoPlayAgainBtn" class="btn btn-primary" style="flex: 1;">
-            ⚡ Play Again
+          <button id="ludoPlayAgainBtn" class="btn btn-primary" style="flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;">
+            ${getIcon('play', 14)} Play Again
           </button>
-          <button id="ludoReturnLobbyBtn" class="btn btn-secondary" style="flex: 1;">
-            🏠 Game Lobby
+          <button id="ludoReturnLobbyBtn" class="btn btn-secondary" style="flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;">
+            ${getIcon('home', 14)} Game Lobby
           </button>
         </div>
       </div>
@@ -2723,7 +2724,7 @@ async function renderLudoGame(sessionId, token, userEmail, sessionMeta) {
       diceBtn.disabled = true;
 
       let tumble = setInterval(() => {
-        diceBtn.textContent = DICE_FACES[Math.floor(Math.random() * 6)];
+        diceBtn.innerHTML = getSvgDice(Math.floor(Math.random() * 6) + 1, 32);
       }, 60);
 
       try {
@@ -2737,13 +2738,13 @@ async function renderLudoGame(sessionId, token, userEmail, sessionMeta) {
         diceBtn.classList.remove('ludo-dice-rolling');
 
         if (data.success) {
-          diceBtn.textContent = DICE_FACES[(data.roll || 1) - 1];
+          diceBtn.innerHTML = getSvgDice(data.roll || 1, 32);
           if (data.consecutiveSixPenalty) {
-            window.showToast('⚠️ 3 consecutive sixes! Turn forfeited.', 'error');
+            window.showToast('3 consecutive sixes! Turn forfeited.', 'error');
           } else if (data.noLegalMoves) {
             window.showToast(`Rolled a ${data.roll} with no legal moves. Passing turn...`, 'info');
           } else if (data.roll === 6) {
-            window.showToast('🔥 Rolled a 6! Select a token to bring out or advance.', 'success');
+            window.showToast('Rolled a 6! Select a token to bring out or advance.', 'success');
           }
         } else {
           window.showToast(data.error || 'Failed to roll', 'error');
@@ -2769,10 +2770,10 @@ async function renderLudoGame(sessionId, token, userEmail, sessionMeta) {
       const data = await res.json();
       if (data.success) {
         if (data.captured && data.captured.length > 0) {
-          window.showToast(`⚔️ Captured opponent token!`, 'success');
+          window.showToast('Captured opponent token!', 'success');
         }
         if (data.bonusRoll) {
-          window.showToast(`🎲 Bonus roll granted! Roll again.`, 'success');
+          window.showToast('Bonus roll granted! Roll again.', 'success');
         }
       } else {
         window.showToast(data.error || 'Illegal move', 'error');

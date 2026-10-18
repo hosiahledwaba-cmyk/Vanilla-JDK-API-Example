@@ -8,7 +8,7 @@ let monitorIntervalId = null;
 // OpenAPI Catalog of Robinhood Endpoints
 const API_SPEC = [
   {
-    group: '🔐 Authentication & Profiles',
+    group: 'Authentication & Profiles',
     endpoints: [
       {
         id: 'auth_signup',
@@ -39,7 +39,7 @@ const API_SPEC = [
     ]
   },
   {
-    group: '🏠 Custom Multiplayer Rooms',
+    group: 'Custom Multiplayer Rooms',
     endpoints: [
       {
         id: 'rooms_create',
@@ -123,7 +123,7 @@ const API_SPEC = [
     ]
   },
   {
-    group: '⚡ Atomic Matchmaking Queue',
+    group: 'Atomic Matchmaking Queue',
     endpoints: [
       {
         id: 'queue_join',
@@ -162,7 +162,7 @@ const API_SPEC = [
     ]
   },
   {
-    group: '🎮 Active Matches & Forfeits',
+    group: 'Active Matches & Forfeits',
     endpoints: [
       {
         id: 'game_session_get',
@@ -201,7 +201,7 @@ const API_SPEC = [
     ]
   },
   {
-    group: '🇿🇦 South African Khasino (Kasi Kasino)',
+    group: 'South African Khasino (Kasi Kasino)',
     endpoints: [
       {
         id: 'khasino_state',
@@ -246,7 +246,7 @@ const API_SPEC = [
     ]
   },
   {
-    group: '♟️ Ludo Master Arena',
+    group: 'Ludo Master Arena',
     endpoints: [
       {
         id: 'ludo_state',
@@ -301,7 +301,7 @@ const API_SPEC = [
     ]
   },
   {
-    group: '🃏 Card Games (Crazy 8s & Uno)',
+    group: 'Card Games (Crazy 8s & Uno)',
     endpoints: [
       {
         id: 'card_state',
@@ -333,7 +333,7 @@ const API_SPEC = [
     ]
   },
   {
-    group: '🎲 Snakes & Ladders',
+    group: 'Snakes & Ladders',
     endpoints: [
       {
         id: 'snl_roll',
@@ -350,7 +350,7 @@ const API_SPEC = [
     ]
   },
   {
-    group: '🪙 Wallet & Tokens',
+    group: 'Wallet & Tokens',
     endpoints: [
       {
         id: 'wallet_balance',
@@ -377,7 +377,7 @@ const API_SPEC = [
     ]
   },
   {
-    group: '📈 System Health & Telemetry',
+    group: 'System Health & Telemetry',
     endpoints: [
       {
         id: 'sys_health',
@@ -472,7 +472,7 @@ function renderEndpoints() {
               <span class="endpoint-summary">• ${ep.summary}</span>
             </div>
             <div style="display: flex; align-items: center; gap: 0.75rem;">
-              ${ep.requiresAuth ? '<span style="font-size: 0.72rem; color: #fbbf24; font-family: \'JetBrains Mono\';">🔒 Protected</span>' : '<span style="font-size: 0.72rem; color: #94a3b8; font-family: \'JetBrains Mono\';">🌐 Public</span>'}
+              ${ep.requiresAuth ? '<span style="font-size: 0.72rem; color: #fbbf24; font-family: \'JetBrains Mono\';">Protected</span>' : '<span style="font-size: 0.72rem; color: #94a3b8; font-family: \'JetBrains Mono\';">Public</span>'}
               <span id="chevron_${ep.id}" style="color: #64748b; font-size: 0.85rem;">▼</span>
             </div>
           </div>
@@ -526,10 +526,10 @@ function renderEndpoints() {
 
             <div style="margin-top: 1.25rem; display: flex; align-items: center; gap: 0.75rem;">
               <button class="btn-execute" onclick="executeEndpoint('${ep.id}')">
-                ▶️ Execute Request
+                Execute Request
               </button>
               <span id="loader_${ep.id}" style="display: none; font-size: 0.85rem; color: #38bdf8;">
-                ⏳ Executing...
+                Executing...
               </span>
             </div>
 
@@ -544,7 +544,7 @@ function renderEndpoints() {
                   <span id="resp_time_${ep.id}" style="font-size: 0.75rem; color: #94a3b8; font-family: 'JetBrains Mono';">-- ms</span>
                 </div>
                 <button class="btn btn-secondary" onclick="copyResponse('${ep.id}')" style="font-size: 0.72rem; padding: 0.2rem 0.55rem;">
-                  📋 Copy JSON
+                  Copy JSON
                 </button>
               </div>
               <div id="resp_viewer_${ep.id}" class="response-box"></div>
@@ -893,12 +893,12 @@ function updateAuthBadge() {
   if (activeToken) {
     badge.textContent = `Authorized (${activeUser || activeToken.substring(0, 10) + '...'})`;
     badge.style.color = '#34d399';
-    if (btnIcon) btnIcon.textContent = '🔒';
+    if (btnIcon) btnIcon.innerHTML = `<svg class="app-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`;
     if (btnText) btnText.textContent = 'Authorized';
   } else {
     badge.textContent = 'Anonymous (No Token)';
     badge.style.color = '#fbbf24';
-    if (btnIcon) btnIcon.textContent = '🔓';
+    if (btnIcon) btnIcon.innerHTML = `<svg class="app-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>`;
     if (btnText) btnText.textContent = 'Authorize';
   }
 }
@@ -908,3 +908,4 @@ renderEndpoints();
 updateAuthBadge();
 fetchSystemStats(false);
 updateRefreshInterval();
+

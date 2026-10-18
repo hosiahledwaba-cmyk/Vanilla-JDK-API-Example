@@ -1,4 +1,5 @@
 // client/web vanilla/scripts/main.js
+import { getIcon } from './icons.js';
 
 export function showToast(message, type = 'info') {
   const container = document.getElementById('toast-container');
@@ -6,8 +7,12 @@ export function showToast(message, type = 'info') {
 
   const toast = document.createElement('div');
   toast.className = `toast ${type}`;
-  const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
-  toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
+  const icon = type === 'success' 
+    ? getIcon('checkCircle', 16, '', 'color: #34d399;') 
+    : type === 'error' 
+    ? getIcon('alert', 16, '', 'color: #f87171;') 
+    : getIcon('info', 16, '', 'color: #60a5fa;');
+  toast.innerHTML = `<span style="display: inline-flex; align-items: center;">${icon}</span> <span>${message}</span>`;
 
   container.appendChild(toast);
   setTimeout(() => {
@@ -45,16 +50,16 @@ export function renderNavTabs(activeTab = 'lobby') {
   return `
     <nav class="tabs-bar" role="tablist" aria-label="Main Navigation">
       <button class="tab-btn ${activeTab === 'lobby' ? 'active' : ''}" data-nav="lobby" role="tab" aria-selected="${activeTab === 'lobby'}">
-        <span>🎮</span> Games & Lobby
+        ${getIcon('gamepad', 18)} Games & Lobby
       </button>
       <button class="tab-btn ${activeTab === 'wallet' ? 'active' : ''}" data-nav="wallet" role="tab" aria-selected="${activeTab === 'wallet'}">
-        <span>🪙</span> Token Wallet
+        ${getIcon('coin', 18)} Token Wallet
       </button>
       <button class="tab-btn ${activeTab === 'leaderboard' ? 'active' : ''}" data-nav="leaderboard" role="tab" aria-selected="${activeTab === 'leaderboard'}">
-        <span>🏆</span> Leaderboard
+        ${getIcon('trophy', 18)} Leaderboard
       </button>
       <button class="tab-btn ${activeTab === 'history' ? 'active' : ''}" data-nav="history" role="tab" aria-selected="${activeTab === 'history'}">
-        <span>📜</span> History & Ledger
+        ${getIcon('scroll', 18)} History & Ledger
       </button>
     </nav>
   `;

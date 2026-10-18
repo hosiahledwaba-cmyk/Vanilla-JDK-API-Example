@@ -1,4 +1,5 @@
 // client/web vanilla/scripts/auth.js
+import { getIcon } from './icons.js';
 
 export const AuthModule = {
   render(container) {
@@ -9,8 +10,8 @@ export const AuthModule = {
         <div class="auth-container">
           <div class="card" style="box-shadow: var(--shadow-pop); border-color: var(--border-medium); padding: 2.25rem;">
             <div class="auth-header">
-              <div style="width: 48px; height: 48px; border-radius: var(--radius-md); background: var(--surface-secondary); border: 1px solid var(--border-medium); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; font-size: 1.5rem; color: var(--accent-primary);">
-                🏹
+              <div style="width: 48px; height: 48px; border-radius: var(--radius-md); background: var(--surface-secondary); border: 1px solid var(--border-medium); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; color: var(--accent-primary);">
+                ${getIcon('brand', 26)}
               </div>
               <h2 style="font-size: 1.75rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 0.35rem;">
                 ${mode === 'login' ? 'Welcome Back' : 'Join RobinHood'}
@@ -42,7 +43,7 @@ export const AuthModule = {
             </form>
 
             <div style="margin-top: 1.75rem; padding-top: 1.25rem; border-top: 1px solid var(--border-subtle); font-size: 0.78rem; color: var(--text-muted); text-align: center; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-              <span>🔒</span> Pure Vanilla JDK Backend • PostgreSQL 16 Persistence
+              <span>${getIcon('shield', 14)}</span> Pure Vanilla JDK Backend • PostgreSQL 16 Persistence
             </div>
           </div>
         </div>
