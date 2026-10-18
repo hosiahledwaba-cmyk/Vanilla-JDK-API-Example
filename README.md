@@ -6,7 +6,7 @@
 [![Architecture](https://img.shields.io/badge/Architecture-Zero%20Frameworks-green)](#architecture-philosophy)
 [![Icons](https://img.shields.io/badge/Iconography-Pure%20Vector%20SVG-darkblue)](#universal-vector-svg-icon-system)
 
-RobinHood is a high-performance, real-time multiplayer gaming platform engineered with **zero external web frameworks** — running entirely on standard **Vanilla JDK 21+** (`com.sun.net.httpserver`, virtual threads, raw JDBC connection pooling) and a contemporary, glassmorphic **Vanilla HTML5/CSS3/JavaScript (ES6+)** single-page web client with an integrated vector SVG design system.
+RobinHood is a high-performance, real-time multiplayer gaming platform engineered with **zero external web frameworks**, running entirely on standard **Vanilla JDK 21+** (`com.sun.net.httpserver`, virtual threads, raw JDBC connection pooling) and a contemporary, glassmorphic **Vanilla HTML5/CSS3/JavaScript (ES6+)** single-page web client with an integrated vector SVG design system.
 
 ---
 
