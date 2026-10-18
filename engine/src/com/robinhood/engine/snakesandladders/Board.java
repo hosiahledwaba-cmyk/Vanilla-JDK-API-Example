@@ -85,6 +85,48 @@ public class Board {
         return position >= BOARD_SIZE;
     }
 
+    public Map<Integer, Integer> getSnakesMap() {
+        Map<Integer, Integer> map = new HashMap<>();
+        for (Snake s : snakes.values()) map.put(s.getHead(), s.getTail());
+        return map;
+    }
+
+    public Map<Integer, Integer> getLaddersMap() {
+        Map<Integer, Integer> map = new HashMap<>();
+        for (Ladder l : ladders.values()) map.put(l.getBase(), l.getTop());
+        return map;
+    }
+
+    public String toJson() {
+        StringBuilder sb = new StringBuilder("{");
+        sb.append("\"snakes\":{");
+        int count = 0;
+        for (Snake s : snakes.values()) {
+            if (count++ > 0) sb.append(",");
+            sb.append("\"").append(s.getHead()).append("\":").append(s.getTail());
+        }
+        sb.append("},\"ladders\":{");
+        count = 0;
+        for (Ladder l : ladders.values()) {
+            if (count++ > 0) sb.append(",");
+            sb.append("\"").append(l.getBase()).append("\":").append(l.getTop());
+        }
+        sb.append("},\"snakeList\":[");
+        count = 0;
+        for (Snake s : snakes.values()) {
+            if (count++ > 0) sb.append(",");
+            sb.append("{\"head\":").append(s.getHead()).append(",\"tail\":").append(s.getTail()).append("}");
+        }
+        sb.append("],\"ladderList\":[");
+        count = 0;
+        for (Ladder l : ladders.values()) {
+            if (count++ > 0) sb.append(",");
+            sb.append("{\"base\":").append(l.getBase()).append(",\"top\":").append(l.getTop()).append("}");
+        }
+        sb.append("]}");
+        return sb.toString();
+    }
+
     public Map<String, Object> serializeBoard() {
         Map<String, Object> data = new HashMap<>();
         data.put("snakes", snakes.values().stream()

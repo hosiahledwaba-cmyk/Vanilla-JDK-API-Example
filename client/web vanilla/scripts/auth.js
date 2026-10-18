@@ -1,61 +1,124 @@
-// scripts/auth.js
+// client/web vanilla/scripts/auth.js
 
-const AuthModule = {
+export const AuthModule = {
   render(container) {
-    container.innerHTML = `
-      <div>
-        <h2 class="text-xl font-semibold mb-4">Login / Signup</h2>
-        <form id="authForm" class="space-y-4">
-          <input type="text" id="username" placeholder="Username" class="w-full border p-2 rounded" required />
-          <input type="password" id="password" placeholder="Password" class="w-full border p-2 rounded" required />
-          <div class="flex space-x-4">
-            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Login</button>
-            <button type="button" id="signupBtn" class="bg-green-600 text-white px-4 py-2 rounded">Sign Up</button>
+    let mode = 'login'; // 'login' or 'signup'
+
+    function updateView() {
+      container.innerHTML = `
+        <div class="auth-container">
+          <div class="glass-card">
+            <div class="auth-header">
+              <h2>${mode === 'login' ? 'Welcome Back' : 'Join RobinHood'}</h2>
+              <p>${mode === 'login' ? 'Log in to play Snakes & Ladders for real token wagers' : 'Create an account & claim 100 free tokens to start playing!'}</p>
+            </div>
+
+            <div class="auth-toggle">
+              <button type="button" id="toggleLogin" class="auth-toggle-btn ${mode === 'login' ? 'active' : ''}">Sign In</button>
+              <button type="button" id="toggleSignup" class="auth-toggle-btn ${mode === 'signup' ? 'active' : ''}">Create Account</button>
+            </div>
+
+            <form id="authForm">
+              <div class="form-group">
+                <label class="form-label" for="authUsername">Username or Email</label>
+                <input type="text" id="authUsername" class="form-input" placeholder="e.g. robin_hood" required autocomplete="username" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="authPassword">Password</label>
+                <input type="password" id="authPassword" class="form-input" placeholder="••••••••" required autocomplete="current-password" />
+              </div>
+
+              <button type="submit" id="authSubmitBtn" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
+                ${mode === 'login' ? 'Sign In' : 'Claim Tokens & Register'}
+              </button>
+            </form>
+
+            <div style="margin-top: 1.25rem; font-size: 0.85rem; color: var(--text-muted); text-align: center;">
+              🔒 100% Zero-Dependency Pure JDK standard backend with in-memory persistence
+            </div>
           </div>
-        </form>
-        <p id="authMsg" class="mt-2 text-sm text-red-500"></p>
-      </div>
-    `;
+        </div>
+      `;
 
-    const form = document.getElementById('authForm');
-    const signupBtn = document.getElementById('signupBtn');
-    const msg = document.getElementById('authMsg');
+      document.getElementById('toggleLogin').onclick = () => {
+        mode = 'login';
+        updateView();
+      };
 
-    form.onsubmit = async e => {
-      e.preventDefault();
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value.trim();
-      const res = await fetch('http://localhost:8080/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      });
-      const data = await res.json();
-      if (data.token) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', username);
-        checkAuth();
-      } else {
-        msg.textContent = data.error || 'Login failed';
-      }
-    };
+      document.getElementById('toggleSignup').onclick = () => {
+        mode = 'signup';
+        updateView();
+      };
 
-    signupBtn.onclick = async () => {
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value.trim();
-      const res = await fetch('http://localhost:8080/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      });
-      const data = await res.json();
-      if (data.success) {
-        msg.textContent = 'Signup successful. You can now log in.';
-      } else {
-        msg.textContent = data.error || 'Signup failed';
-      }
-    };
+      const form = document.getElementById('authForm');
+      const submitBtn = document.getElementById('authSubmitBtn');
+
+      form.onsubmit = async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('authUsername').value.trim();
+        const password = document.getElementById('authPassword').value.trim();
+
+        if (!username || !password) {
+          window.showToast('Please fill in both fields.', 'error');
+          return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Processing...';
+
+        try {
+          const endpoint = mode === 'login' ? '/auth/login' : '/auth/signup';
+          const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+          });
+
+          const data = await res.json();
+
+          if (mode === 'signup') {
+            if (data.success) {
+              window.showToast('Account created! Logging you in...', 'success');
+              // Automatically log in after registration
+              const loginRes = await fetch('/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+              });
+              const loginData = await loginRes.json();
+              if (loginData.token) {
+                localStorage.setItem('token', loginData.token);
+                localStorage.setItem('user', loginData.user || username);
+                localStorage.setItem('email', loginData.email || username);
+                window.checkAuth();
+              } else {
+                mode = 'login';
+                updateView();
+              }
+            } else {
+              window.showToast(data.error || 'Signup failed', 'error');
+            }
+          } else {
+            if (data.token) {
+              localStorage.setItem('token', data.token);
+              localStorage.setItem('user', data.user || username);
+              localStorage.setItem('email', data.email || username);
+              window.showToast(`Welcome back, ${username}!`, 'success');
+              window.checkAuth();
+            } else {
+              window.showToast(data.error || 'Invalid username or password', 'error');
+            }
+          }
+        } catch (err) {
+          window.showToast('Server connection error. Is the server running?', 'error');
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = mode === 'login' ? 'Sign In' : 'Claim Tokens & Register';
+        }
+      };
+    }
+
+    updateView();
   }
 };
-
-window.AuthModule = AuthModule;

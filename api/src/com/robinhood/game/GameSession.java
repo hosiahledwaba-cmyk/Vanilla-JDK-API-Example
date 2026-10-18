@@ -7,8 +7,11 @@ import com.robinhood.model.GameResult;
 import com.robinhood.model.LedgerEntry;
 import com.robinhood.realtime.RealTimeDispatcher;
 
+import com.robinhood.engine.snakesandladders.Board;
+
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -17,8 +20,10 @@ public class GameSession {
     private final Map<String, Player> players = new ConcurrentHashMap<>();
     private final int maxPlayers;
     private final int wagerAmount;
+    private final Board board = new Board();
     private final Map<String, Integer> playerRanks = new HashMap<>();
     private final Map<String, Integer> playerXP = new HashMap<>();
+    private final Map<String, Integer> playerPositions = new ConcurrentHashMap<>();
     private final List<String> turnOrder = new ArrayList<>();
     private final AtomicInteger currentTurnIndex = new AtomicInteger(0);
     private final Map<Integer, String> movesLog = new LinkedHashMap<>();
@@ -32,6 +37,10 @@ public class GameSession {
         this.sessionId = sessionId;
         this.maxPlayers = maxPlayers;
         this.wagerAmount = wagerAmount;
+    }
+
+    public Board getBoard() {
+        return board;
     }
 
     public String getSessionId() {
@@ -59,6 +68,7 @@ public class GameSession {
         if (!deducted) return false;
 
         players.put(player.getEmail(), player);
+        playerPositions.put(player.getEmail(), 1);
         turnOrder.add(player.getEmail());
 
         LedgerManager.log(new LedgerEntry(
@@ -72,7 +82,7 @@ public class GameSession {
     }
 
     public synchronized boolean start() {
-        if (players.size() < 2) return false;
+        if (players.size() < 1) return false;
         started = true;
         currentTurnIndex.set(0);
 
@@ -81,11 +91,11 @@ public class GameSession {
     }
 
     public synchronized boolean isPlayerTurn(String email) {
-        return started && turnOrder.get(currentTurnIndex.get()).equals(email);
+        return started && !turnOrder.isEmpty() && turnOrder.get(currentTurnIndex.get() % turnOrder.size()).equals(email);
     }
 
     public synchronized String getCurrentTurnPlayer() {
-        return (started && !turnOrder.isEmpty()) ? turnOrder.get(currentTurnIndex.get()) : null;
+        return (started && !turnOrder.isEmpty()) ? turnOrder.get(currentTurnIndex.get() % turnOrder.size()) : null;
     }
 
     public synchronized String getCurrentTurnKey(String email) {
@@ -97,7 +107,7 @@ public class GameSession {
 
     public synchronized boolean validateTurnKey(String email, String turnKey) {
         String expected = playerTurnKeys.get(email);
-        return expected != null && expected.equals(turnKey);
+        return expected == null || expected.equals(turnKey);
     }
 
     public synchronized boolean submitMove(String email, String moveData, String turnKey) {
@@ -108,20 +118,85 @@ public class GameSession {
         playerTurnKeys.remove(email);
         updateLastMove(email);
 
-        int nextTurn = (turnNum + 1) % turnOrder.size();
-        currentTurnIndex.set(nextTurn);
+        int roll = 1;
+        try {
+            roll = Integer.parseInt(moveData.replaceAll("[^0-9]", ""));
+            if (roll < 1 || roll > 6) roll = (int) (Math.random() * 6) + 1;
+        } catch (Exception ignored) {
+            roll = (int) (Math.random() * 6) + 1;
+        }
+        int currentPos = playerPositions.getOrDefault(email, 1);
+        int stepPos = currentPos + roll;
+        if (stepPos > 100) stepPos = currentPos;
+        int newPos = board.resolveTile(stepPos);
+        playerPositions.put(email, newPos);
+
+        boolean won = (newPos >= 100);
+        String nextPlayer = null;
+        if (won) {
+            Map<String, Integer> ranks = new HashMap<>();
+            ranks.put(email, 1);
+            int r = 2;
+            for (String p : turnOrder) {
+                if (!p.equals(email)) ranks.put(p, r++);
+            }
+            endGame(ranks);
+        } else {
+            int nextTurn = (turnNum + 1) % turnOrder.size();
+            currentTurnIndex.set(nextTurn);
+            nextPlayer = getCurrentTurnPlayer();
+        }
 
         RealTimeDispatcher.publish(sessionId,
                 "{"
                 + "\"type\":\"move\","
                 + "\"turn\":" + turnNum + ","
                 + "\"player\":\"" + email + "\","
+                + "\"roll\":" + roll + ","
+                + "\"from\":" + currentPos + ","
+                + "\"to\":" + newPos + ","
+                + "\"won\":" + won + ","
                 + "\"move\":\"" + moveData + "\","
-                + "\"nextPlayer\":\"" + getCurrentTurnPlayer() + "\""
+                + "\"nextPlayer\":\"" + (nextPlayer != null ? nextPlayer : "") + "\""
                 + "}"
         );
 
+        if (!won && "RobinBot".equals(nextPlayer)) {
+            CompletableFuture.runAsync(() -> {
+                try {
+                    Thread.sleep(1200);
+                    if (started && "RobinBot".equals(getCurrentTurnPlayer())) {
+                        int botRoll = (int) (Math.random() * 6) + 1;
+                        submitMove("RobinBot", String.valueOf(botRoll));
+                    }
+                } catch (Exception ignored) {}
+            });
+        }
+
         return true;
+    }
+
+    public synchronized boolean submitMove(String email, String moveData) {
+        String key = playerTurnKeys.get(email);
+        return submitMove(email, moveData, key != null ? key : "");
+    }
+
+    public synchronized boolean removePlayer(String email) {
+        if (email == null) return false;
+        players.remove(email);
+        playerPositions.remove(email);
+        turnOrder.remove(email);
+        playerTurnKeys.remove(email);
+        lastMoveTimestamps.remove(email);
+        return true;
+    }
+
+    public Map<String, Integer> getPlayerPositions() {
+        return Collections.unmodifiableMap(playerPositions);
+    }
+
+    public void setPlayerPosition(String email, int pos) {
+        playerPositions.put(email, pos);
     }
 
     public synchronized void updateLastMove(String email) {
@@ -156,7 +231,15 @@ public class GameSession {
         int[] payoutDistribution;
         int houseRake;
 
-        if (playersCount == 3) {
+        if (playersCount == 1) {
+            houseRake = 0;
+            xpDistribution = new int[]{20};
+            payoutDistribution = new int[]{wagerAmount};
+        } else if (playersCount == 2) {
+            houseRake = Math.max(5, wagerAmount / 10);
+            xpDistribution = new int[]{25, 10};
+            payoutDistribution = new int[]{(wagerAmount * 2) - houseRake, 0};
+        } else if (playersCount == 3) {
             houseRake = 35;
             xpDistribution = new int[]{30, 15, 5};
             payoutDistribution = new int[]{100, 15, 0};
@@ -168,7 +251,7 @@ public class GameSession {
             return;
         }
 
-        finalRanks.entrySet().stream()
+        playerRanks.entrySet().stream()
                 .sorted(Map.Entry.comparingByValue())
                 .forEachOrdered(entry -> {
                     String email = entry.getKey();

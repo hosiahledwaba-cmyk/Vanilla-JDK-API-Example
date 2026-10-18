@@ -7,8 +7,8 @@ import java.util.Map;
 
 public class PaymentGatewayService {
 
-    public static Map<String,Object> initiateDeposit(PaymentTransaction tx) throws Exception {
-        String gateway = tx.getGateway().toLowerCase();
+    public static Map<String, Object> initiateDeposit(PaymentTransaction tx) throws Exception {
+        String gateway = tx.getGateway() != null ? tx.getGateway().toLowerCase() : "stripe";
 
         switch (gateway) {
             case "stripe":
@@ -27,8 +27,9 @@ public class PaymentGatewayService {
         }
     }
 
-    public static Map<String,Object> handleWebhook(String gateway, String rawJson, Map<String,String> headers) throws Exception {
-        switch (gateway.toLowerCase()) {
+    public static Map<String, Object> handleWebhook(String gateway, String rawJson, Map<String, String> headers) throws Exception {
+        String gw = gateway != null ? gateway.toLowerCase() : "stripe";
+        switch (gw) {
             case "stripe":
                 return StripeService.handleWebhook(rawJson, headers);
             case "ozow":

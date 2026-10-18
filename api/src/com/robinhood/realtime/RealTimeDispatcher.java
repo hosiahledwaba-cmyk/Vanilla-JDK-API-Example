@@ -24,6 +24,7 @@ public class RealTimeDispatcher {
             "HTTP/1.1 200 OK\r\n" +
             "Content-Type: text/event-stream\r\n" +
             "Cache-Control: no-cache\r\n" +
+            "Access-Control-Allow-Origin: *\r\n" +
             "Connection: keep-alive\r\n\r\n";
         channel.write(ByteBuffer.wrap(headers.getBytes()));
     }
@@ -53,6 +54,10 @@ public class RealTimeDispatcher {
         }
     }
 
+    public static int getActiveConnectionCount() {
+        return lastHeartbeat.size();
+    }
+
     public static void heartbeatAndCleanup() {
         Instant now = Instant.now();
         for (Map.Entry<SocketChannel, Instant> entry : lastHeartbeat.entrySet()) {
@@ -60,7 +65,7 @@ public class RealTimeDispatcher {
             Instant last = entry.getValue();
             try {
                 if (Duration.between(last, now).compareTo(HEARTBEAT_INTERVAL) >= 0) {
-                    ch.write(ByteBuffer.wrap(":\n\n".getBytes()));  // SSE “ping”
+                    ch.write(ByteBuffer.wrap(":\n\n".getBytes()));  // SSE ping
                     lastHeartbeat.put(ch, now);
                 }
                 if (Duration.between(last, now).compareTo(TIMEOUT) > 0) {
@@ -74,7 +79,6 @@ public class RealTimeDispatcher {
 
     private static void closeChannel(SocketChannel ch) {
         lastHeartbeat.remove(ch);
-        // remove from all session subscriber sets
         subscribers.values().forEach(set -> set.remove(ch));
         closeSilently(ch);
     }

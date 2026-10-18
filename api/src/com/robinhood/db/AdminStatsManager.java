@@ -14,7 +14,7 @@ public class AdminStatsManager {
     }
 
     public static int getActiveConnections() {
-        return GameManager.getActiveConnectionCount(); // This must be implemented in GameManager
+        return GameManager.getActiveConnectionCount();
     }
 
     public static int getHouseEarnings() {
@@ -24,7 +24,7 @@ public class AdminStatsManager {
              ResultSet rs = ps.executeQuery()) {
             if (rs.next()) return rs.getInt("total");
         } catch (SQLException e) {
-            e.printStackTrace();
+            // DB may be offline
         }
         return 0;
     }
@@ -36,7 +36,7 @@ public class AdminStatsManager {
              ResultSet rs = ps.executeQuery()) {
             if (rs.next()) return rs.getInt("count");
         } catch (SQLException e) {
-            e.printStackTrace();
+            // DB may be offline
         }
         return 0;
     }
@@ -50,9 +50,10 @@ public class AdminStatsManager {
              PreparedStatement p = c.prepareStatement(sql);
              ResultSet rs = p.executeQuery()) {
             while (rs.next()) {
+                Timestamp ts = rs.getTimestamp("created_at");
                 out.add(Map.of(
                         "email", rs.getString("email"),
-                        "joined", rs.getTimestamp("created_at").toString()
+                        "joined", ts != null ? ts.toString() : ""
                 ));
             }
         }
@@ -81,13 +82,14 @@ public class AdminStatsManager {
             if (status != null) p.setString(1, status);
             ResultSet rs = p.executeQuery();
             while (rs.next()) {
+                Timestamp ts = rs.getTimestamp("requested_at");
                 out.add(Map.of(
                         "id", rs.getInt("id"),
                         "email", rs.getString("email"),
                         "amount", rs.getInt("amount"),
-                        "method", rs.getString("method"),
-                        "status", rs.getString("status"),
-                        "requestedAt", rs.getTimestamp("requested_at").toString()
+                        "method", rs.getString("method") != null ? rs.getString("method") : "",
+                        "status", rs.getString("status") != null ? rs.getString("status") : "",
+                        "requestedAt", ts != null ? ts.toString() : ""
                 ));
             }
         }
@@ -115,7 +117,17 @@ public class AdminStatsManager {
     // --- Game Sessions & History ---
 
     public static List<Map<String, Object>> listActiveSessions() {
-        return GameManager.listActiveSessions(); // You must expose this from GameManager
+        return GameManager.listActiveSessions();
+    }
+
+    public static List<Map<String, Object>> listAllSessions() {
+        return listActiveSessions();
+    }
+
+    public static boolean killSession(String sid) {
+        if (sid == null) return false;
+        GameManager.removeSession(sid);
+        return true;
     }
 
     public static List<Map<String, Object>> getSessionHistory(String sessionId) throws SQLException {
@@ -151,12 +163,12 @@ public class AdminStatsManager {
     }
 
     public static int getTotalXP(String email) throws SQLException {
-        String sql = "SELECT xp FROM leaderboard WHERE email=?";
+        String sql = "SELECT total_xp FROM leaderboard WHERE email=?";
         try (Connection c = DBManager.getConnection();
              PreparedStatement p = c.prepareStatement(sql)) {
             p.setString(1, email);
             ResultSet rs = p.executeQuery();
-            if (rs.next()) return rs.getInt("xp");
+            if (rs.next()) return rs.getInt("total_xp");
         }
         return 0;
     }
@@ -195,32 +207,4 @@ public class AdminStatsManager {
         }
         return 0;
     }
-	
-	// Page helper
-	private static <T> List<T> paginate(List<T> list, int page, int size) {
-		if (page < 1 || size < 1) return Collections.emptyList();
-		int from = (page - 1) * size;
-		if (from >= list.size()) return Collections.emptyList();
-		return list.subList(from, Math.min(from + size, list.size()));
-	}
-
-	// Example: Top users by total XP
-	public static List<Map<String, Object>> topUsersByXP(int limit) throws SQLException {
-		String sql = "SELECT email, xp FROM leaderboard ORDER BY xp DESC LIMIT ?";
-		List<Map<String, Object>> out = new ArrayList<>();
-		try (Connection c = DBManager.getConnection();
-			 PreparedStatement p = c.prepareStatement(sql)) {
-			p.setInt(1, limit);
-			try (ResultSet rs = p.executeQuery()) {
-				while (rs.next()) {
-					Map<String, Object> record = new HashMap<>();
-					record.put("email", rs.getString("email"));
-					record.put("xp", rs.getInt("xp"));
-					out.add(record);
-				}
-			}
-		}
-		return out;
-	}
-	
 }

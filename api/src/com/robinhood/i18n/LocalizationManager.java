@@ -5,12 +5,18 @@ import com.robinhood.util.Logger;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class LocalizationManager {
-    private static final String LANG_DIR = "src/com/robinhood/i18n/lang";
+    private static final String[] POSSIBLE_LANG_DIRS = {
+        "api/src/com/robinhood/i18n/lang",
+        "src/com/robinhood/i18n/lang"
+    };
+    private static String resolvedLangDir = null;
     private static final String DEFAULT_LOCALE = "en";
 
     private static final Map<String, Map<String, String>> bundles = new ConcurrentHashMap<>();
@@ -22,18 +28,26 @@ public class LocalizationManager {
 
     private static void loadAvailableLocales() {
         try {
-            File folder = new File(LANG_DIR);
-            File[] files = folder.listFiles((dir, name) -> name.endsWith(".json"));
-
-            if (files != null) {
-                for (File f : files) {
-                    String locale = f.getName().replaceFirst("\\.json$", "");
-                    availableLocales.add(locale);
+            for (String dirPath : POSSIBLE_LANG_DIRS) {
+                File folder = new File(dirPath);
+                if (folder.exists() && folder.isDirectory()) {
+                    resolvedLangDir = dirPath;
+                    File[] files = folder.listFiles((dir, name) -> name.endsWith(".json"));
+                    if (files != null) {
+                        for (File f : files) {
+                            String locale = f.getName().replaceFirst("\\.json$", "");
+                            availableLocales.add(locale);
+                        }
+                    }
+                    break;
                 }
-                Logger.info("Loaded locales: " + availableLocales);
-            } else {
-                Logger.warn("No language files found in: " + LANG_DIR);
             }
+
+            if (availableLocales.isEmpty()) {
+                // Default fallback locales
+                availableLocales.addAll(List.of("en", "af", "nr", "nso", "ss", "tn", "xh", "zu"));
+            }
+            Logger.info("Loaded locales: " + availableLocales);
         } catch (Exception e) {
             Logger.error("Failed to load locales from lang folder", e);
         }
@@ -45,28 +59,35 @@ public class LocalizationManager {
         String chosenLocale = (locale != null && availableLocales.contains(locale)) ? locale : DEFAULT_LOCALE;
         Map<String, String> bundle = bundles.computeIfAbsent(chosenLocale, LocalizationManager::loadBundle);
 
-        // Attempt in preferred locale
         if (bundle.containsKey(key)) return bundle.get(key);
 
-        // Fallback to default locale if not already default
         if (!chosenLocale.equals(DEFAULT_LOCALE)) {
             Map<String, String> fallback = bundles.computeIfAbsent(DEFAULT_LOCALE, LocalizationManager::loadBundle);
             return fallback.getOrDefault(key, key);
         }
 
-        // Final fallback is just the key
         return key;
     }
 
     private static Map<String, String> loadBundle(String locale) {
-        Path path = Path.of(LANG_DIR, locale + ".json");
-        try (FileReader fr = new FileReader(path.toFile())) {
-            Logger.info("Loading translation bundle: " + locale);
-            return JSONParser.parseJsonToMap(fr);
-        } catch (Exception e) {
-            Logger.warn("Failed to load or parse: " + path + " → " + e.getMessage());
-            return Map.of();
+        if (resolvedLangDir != null) {
+            Path path = Path.of(resolvedLangDir, locale + ".json");
+            File f = path.toFile();
+            if (f.exists()) {
+                try (FileReader fr = new FileReader(f)) {
+                    return JSONParser.parseJsonToMap(fr);
+                } catch (Exception ignored) {}
+            }
         }
+
+        // Try classpath resource
+        try (InputStream is = LocalizationManager.class.getResourceAsStream("/com/robinhood/i18n/lang/" + locale + ".json")) {
+            if (is != null) {
+                return JSONParser.parseJsonToMap(new InputStreamReader(is));
+            }
+        } catch (Exception ignored) {}
+
+        return Map.of();
     }
 
     public static Set<String> getAvailableLocales() {

@@ -8,14 +8,19 @@ public class AdminAuthManager {
     private static final String VIEWER = ConfigLoader.get("admin.viewer.token");
     private static final String OPERATOR = ConfigLoader.get("admin.operator.token");
     private static final String SUPER = ConfigLoader.get("admin.super.token");
+    private static final String ADMIN_TOKEN = ConfigLoader.get("admin.token");
 
     public enum Role { VIEWER, OPERATOR, SUPER }
 
     public static Role getRole(String token) {
-        if (SUPER.equals(token))    return Role.SUPER;
+        if (SUPER.equals(token) || (ADMIN_TOKEN != null && ADMIN_TOKEN.equals(token))) return Role.SUPER;
         if (OPERATOR.equals(token)) return Role.OPERATOR;
         if (VIEWER.equals(token))   return Role.VIEWER;
         return null;
+    }
+
+    public static boolean isAdminToken(String token) {
+        return getRole(token) != null;
     }
 
     public static boolean require(String token, Role... allowed) {

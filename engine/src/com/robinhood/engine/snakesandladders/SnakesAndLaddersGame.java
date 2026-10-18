@@ -1,5 +1,6 @@
 package com.robinhood.engine.snakesandladders;
 
+import com.robinhood.db.audit.GameAuditLogger;
 import com.robinhood.engine.Game;
 import com.robinhood.engine.GameState;
 import com.robinhood.engine.core.Dice;
@@ -15,14 +16,17 @@ public class SnakesAndLaddersGame implements Game {
     private TurnManager turnManager;
     private boolean gameOver = false;
     private String winnerId;
-	private final GameAuditLogger auditLogger;
-	private final String sessionCode;
+    private final GameAuditLogger auditLogger;
+    private final String sessionCode;
 
-	public SnakesAndLaddersGame(String sessionCode, GameAuditLogger auditLogger) {
-		this.sessionCode = sessionCode;
-		this.auditLogger = auditLogger;
-	}
+    public SnakesAndLaddersGame() {
+        this("default", null);
+    }
 
+    public SnakesAndLaddersGame(String sessionCode, GameAuditLogger auditLogger) {
+        this.sessionCode = sessionCode;
+        this.auditLogger = auditLogger;
+    }
 
     @Override
     public void start(List<Player> players) {
@@ -31,19 +35,20 @@ public class SnakesAndLaddersGame implements Game {
             playerMap.put(p.getId(), p);
         }
         turnManager = new TurnManager(players);
-		auditLogger.logSessionStart(
-			"snakes_and_ladders",
-			sessionCode,
-			players.stream().map(Player::getId).toList(),
-			board.serializeBoard()
-		);
-		
+        if (auditLogger != null) {
+            auditLogger.logSessionStart(
+                "snakes_and_ladders",
+                sessionCode,
+                players.stream().map(Player::getId).toList(),
+                board.serializeBoard()
+            );
+        }
     }
 
     @Override
     public GameState move(String playerId, Object moveData) {
         if (gameOver) return buildState("Game has already ended.");
-        if (!turnManager.getCurrentPlayer().getId().equals(playerId)) {
+        if (turnManager == null || !turnManager.getCurrentPlayer().getId().equals(playerId)) {
             return buildState("Not your turn.");
         }
 
@@ -51,40 +56,90 @@ public class SnakesAndLaddersGame implements Game {
             DiceInput input = (DiceInput) moveData;
             int roll = Dice.roll(input);
             Player player = playerMap.get(playerId);
+            if (player == null) return buildState("Player not found: " + playerId);
 
-            int newPos = player.getPosition() + roll;
+            int oldPos = player.getPosition();
+            int newPos = oldPos + roll;
             if (newPos > 100) {
-                newPos = player.getPosition(); // no movement
+                newPos = oldPos; // no movement
             } else {
                 newPos = board.resolveTile(newPos);
             }
 
             player.setPosition(newPos);
 
+            if (auditLogger != null) {
+                auditLogger.logPlayerAction(
+                    sessionCode,
+                    playerId,
+                    "roll",
+                    roll,
+                    oldPos,
+                    newPos,
+                    input.angle(),
+                    input.intensity()
+                );
+            }
+
             if (board.isWinningPosition(newPos)) {
                 gameOver = true;
                 winnerId = playerId;
-                return buildState("🎉 Player " + player.getName() + " wins!");
+                return buildState("Player " + player.getName() + " wins!");
             }
 
             turnManager.nextTurn();
             return buildState(player.getName() + " rolled a " + roll + ".");
         } catch (Exception e) {
-            return buildState("⚠️ Invalid move data: " + e.getMessage());
+            return buildState("Invalid move data: " + e.getMessage());
         }
-		
-		auditLogger.logPlayerAction(
-			sessionCode,
-			playerId,
-			"roll",
-			roll,
-			oldPos,
-			newPos,
-			input.angle(),
-			input.intensity()
-		);
-		
-	}
+    }
+
+    /**
+     * Helper move method used by session managers with discrete roll and physics parameters.
+     */
+    public int move(String playerId, int diceRoll, double angle, double intensity) {
+        if (gameOver) return -1;
+        if (turnManager == null || !turnManager.getCurrentPlayer().getId().equals(playerId)) {
+            return -1;
+        }
+        Player player = playerMap.get(playerId);
+        if (player == null) return -1;
+
+        int oldPos = player.getPosition();
+        int newPos = oldPos + diceRoll;
+        if (newPos > 100) {
+            newPos = oldPos;
+        } else {
+            newPos = board.resolveTile(newPos);
+        }
+
+        player.setPosition(newPos);
+
+        if (auditLogger != null) {
+            auditLogger.logPlayerAction(sessionCode, playerId, "roll", diceRoll, oldPos, newPos, angle, intensity);
+        }
+
+        if (board.isWinningPosition(newPos)) {
+            gameOver = true;
+            winnerId = playerId;
+        } else {
+            turnManager.nextTurn();
+        }
+
+        return newPos;
+    }
+
+    public boolean isGameOver() {
+        return gameOver;
+    }
+
+    public String getWinnerId() {
+        return winnerId;
+    }
+
+    public Map<String, Object> getBoardConfig() {
+        return board.serializeBoard();
+    }
 
     @Override
     public GameState getGameState() {
@@ -99,31 +154,26 @@ public class SnakesAndLaddersGame implements Game {
     private GameState buildState(String message) {
         Map<String, Object> state = new HashMap<>();
 
-        // Players
         List<Map<String, Object>> players = new ArrayList<>();
-        for (Player p : turnManager.getPlayers()) {
-            players.add(Map.of(
-                "id", p.getId(),
-                "name", p.getName(),
-                "position", p.getPosition()
-            ));
+        if (turnManager != null) {
+            for (Player p : turnManager.getPlayers()) {
+                players.add(Map.of(
+                    "id", p.getId(),
+                    "name", p.getName(),
+                    "position", p.getPosition()
+                ));
+            }
         }
 
-        // Combine state
         state.put("players", players);
         state.put("board", board.serializeBoard());
-        state.put("currentTurn", turnManager.getCurrentPlayer().getId());
-		
-		if (gameOver && winnerId != null) {
-			Map<String, Integer> xpMap = calculateXP(); // build from placement logic
-			Map<String, Integer> tokenMap = calculateTokenDistribution(); // from bet
-			auditLogger.logSessionResult(sessionCode, winnerId, xpMap, tokenMap, houseCut);
-		}
-
+        String current = (turnManager != null && turnManager.getCurrentPlayer() != null) ?
+                turnManager.getCurrentPlayer().getId() : "";
+        state.put("currentTurn", current);
 
         return new GameState(
             gameOver,
-            turnManager.getCurrentPlayer().getId(),
+            current,
             state,
             winnerId,
             message

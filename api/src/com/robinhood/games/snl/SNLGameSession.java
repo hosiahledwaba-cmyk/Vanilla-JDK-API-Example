@@ -47,8 +47,10 @@ public class SNLGameSession {
         this.gameStarted = true;
         this.currentPlayerId = players.get(0);
         this.gameEngine = new SnakesAndLaddersGame(sessionId, auditLogger);
-        this.gameEngine.start(players);
-        // Log session start was done in engine.start()
+        List<com.robinhood.engine.core.Player> enginePlayers = players.stream()
+                .map(id -> new com.robinhood.engine.core.Player(id, id))
+                .toList();
+        this.gameEngine.start(enginePlayers);
     }
 
     public boolean makeMove(String playerId, int diceRoll, double angle, double intensity) {
@@ -70,7 +72,6 @@ public class SNLGameSession {
 
             if (gameEngine.isGameOver()) {
                 winnerId = gameEngine.getWinnerId();
-                // Calculate token/XP distribution (will implement below)
                 distributeWinnings();
             }
 
@@ -81,31 +82,21 @@ public class SNLGameSession {
     }
 
     private void distributeWinnings() {
-        // Implemented as per distribution logic discussed:
-        // 3-player games example payout:
-        // Total bet = wagerTokens * playerCount
-        // Distribution:
-        // First place: 100 tokens
-        // Second: 15 tokens
-        // Third: 0 tokens
-        // House takes remainder
-
         int totalPot = wagerTokens * players.size();
         Map<String, Integer> tokenDistribution = new HashMap<>();
         Map<String, Integer> xpDistribution = new HashMap<>();
 
-        // Sort players by position ascending (closer to 100 wins)
+        // Sort players by position descending (closest to 100 wins)
         List<String> sortedPlayers = new ArrayList<>(players);
-        sortedPlayers.sort(Comparator.comparingInt(playerPositions::get).reversed()); // highest position first
+        sortedPlayers.sort(Comparator.comparingInt((String p) -> playerPositions.getOrDefault(p, 0)).reversed());
 
         int houseCut = 0;
 
         if (players.size() == 3) {
-            // Distribution example
             tokenDistribution.put(sortedPlayers.get(0), 100);
             tokenDistribution.put(sortedPlayers.get(1), 15);
             tokenDistribution.put(sortedPlayers.get(2), 0);
-            houseCut = totalPot - 115;
+            houseCut = Math.max(0, totalPot - 115);
 
             xpDistribution.put(sortedPlayers.get(0), 30);
             xpDistribution.put(sortedPlayers.get(1), 15);
@@ -115,27 +106,26 @@ public class SNLGameSession {
             tokenDistribution.put(sortedPlayers.get(1), 20);
             tokenDistribution.put(sortedPlayers.get(2), 5);
             tokenDistribution.put(sortedPlayers.get(3), 0);
-            houseCut = totalPot - 140;
+            houseCut = Math.max(0, totalPot - 140);
 
             xpDistribution.put(sortedPlayers.get(0), 40);
             xpDistribution.put(sortedPlayers.get(1), 20);
             xpDistribution.put(sortedPlayers.get(2), 10);
             xpDistribution.put(sortedPlayers.get(3), 5);
         } else {
-            // For safety, just split evenly minus house 20%
             int houseTake = totalPot / 5;
             houseCut = houseTake;
             int remainder = totalPot - houseTake;
-            int share = remainder / players.size();
+            int share = remainder / Math.max(1, players.size());
             for (String p : players) {
                 tokenDistribution.put(p, share);
                 xpDistribution.put(p, 10);
             }
         }
 
-        // TODO: Integrate wallet update calls here (deduct bets on join, add winnings here)
-
-        auditLogger.logSessionResult(sessionId, winnerId, xpDistribution, tokenDistribution, houseCut);
+        if (auditLogger != null) {
+            auditLogger.logSessionResult(sessionId, winnerId, xpDistribution, tokenDistribution, houseCut);
+        }
     }
 
     public Map<String, Object> getGameState() {

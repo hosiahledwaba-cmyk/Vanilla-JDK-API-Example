@@ -18,7 +18,7 @@ public class WalletController {
     public static String deposit(String token, String body) {
         String email = AuthManager.getEmailFromToken(token);
         Map<String, String> data = JSONParser.parse(body);
-        int amount = Integer.parseInt(data.get("amount"));
+        int amount = Integer.parseInt(data.getOrDefault("amount", "0"));
 
         Wallet wallet = wallets.getOrDefault(email, new Wallet(email, 0));
         wallet.deposit(amount);
@@ -26,13 +26,26 @@ public class WalletController {
 
         LedgerManager.log(new LedgerEntry(email, LedgerEntry.Type.DEPOSIT, amount, "Manual deposit"));
 
-        return ResponseBuilder.json(200, "{\"balance\":" + wallet.getBalance() + "}");
+        return ResponseBuilder.json(200, "{\"balance\":" + wallet.getBalance() + ",\"message\":\"Deposited successfully\"}");
     }
 
     public static String balance(String token) {
         String email = AuthManager.getEmailFromToken(token);
         Wallet wallet = wallets.getOrDefault(email, new Wallet(email, 0));
-        return ResponseBuilder.json(200, "{\"balance\":" + wallet.getBalance() + "}");
+        return ResponseBuilder.json(200, "{\"balance\":" + wallet.getBalance() + ",\"email\":\"" + email + "\"}");
+    }
+
+    public static String withdraw(String token, String body) {
+        String email = AuthManager.getEmailFromToken(token);
+        Map<String, String> data = JSONParser.parse(body);
+        int amount = Integer.parseInt(data.getOrDefault("amount", "0"));
+
+        if (!deduct(email, amount)) {
+            return ResponseBuilder.json(400, "{\"error\":\"Insufficient balance\",\"balance\":" + getBalance(email) + "}");
+        }
+
+        LedgerManager.log(new LedgerEntry(email, LedgerEntry.Type.WITHDRAWAL, amount, "Wallet withdrawal"));
+        return ResponseBuilder.json(200, "{\"balance\":" + getBalance(email) + ",\"message\":\"Withdrawn successfully\"}");
     }
 
     public static boolean deduct(String email, int amount) {

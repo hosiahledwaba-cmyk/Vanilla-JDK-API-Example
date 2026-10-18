@@ -43,42 +43,62 @@ public class WithdrawalManager {
         sb.append("]");
         return sb.toString();
     }
-	
-	public static boolean requestWithdrawalAtomically(String email, int amount, String method, String details) {
-		String deductSql = "UPDATE wallets SET balance = balance - ? WHERE email = ? AND balance >= ?";
-		String insertSql = "INSERT INTO withdrawal_requests (email, amount, method, details) VALUES (?, ?, ?, ?)";
 
-		try (Connection conn = DBManager.getConnection()) {
-			conn.setAutoCommit(false);
+    public static String getAllPending() {
+        StringBuilder sb = new StringBuilder("[");
+        String sql = "SELECT * FROM withdrawal_requests WHERE status = 'pending' ORDER BY requested_at ASC";
+        try (Connection conn = DBManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                sb.append("{\"id\":").append(rs.getInt("id"))
+                  .append(",\"email\":\"").append(rs.getString("email"))
+                  .append("\",\"amount\":").append(rs.getInt("amount"))
+                  .append(",\"status\":\"").append(rs.getString("status"))
+                  .append("\",\"method\":\"").append(rs.getString("method"))
+                  .append("\",\"requestedAt\":\"").append(rs.getTimestamp("requested_at")).append("\"},");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        if (sb.length() > 1) sb.setLength(sb.length() - 1);
+        sb.append("]");
+        return sb.toString();
+    }
 
-			// 1. Deduct from wallet table
-			try (PreparedStatement ps1 = conn.prepareStatement(deductSql)) {
-				ps1.setInt(1, amount);
-				ps1.setString(2, email);
-				ps1.setInt(3, amount);
-				int updated = ps1.executeUpdate();
-				if (updated != 1) {
-					conn.rollback();
-					return false; // insufficient funds
-				}
-			}
+    public static boolean requestWithdrawalAtomically(String email, int amount, String method, String details) {
+        String deductSql = "UPDATE wallets SET balance = balance - ? WHERE email = ? AND balance >= ?";
+        String insertSql = "INSERT INTO withdrawal_requests (email, amount, method, details) VALUES (?, ?, ?, ?)";
 
-			// 2. Insert withdrawal request
-			try (PreparedStatement ps2 = conn.prepareStatement(insertSql)) {
-				ps2.setString(1, email);
-				ps2.setInt(2, amount);
-				ps2.setString(3, method);
-				ps2.setString(4, details);
-				ps2.executeUpdate();
-			}
+        try (Connection conn = DBManager.getConnection()) {
+            conn.setAutoCommit(false);
 
-			conn.commit();
-			return true;
-		} catch (SQLException e) {
-			e.printStackTrace();
-			return false;
-		}
-	}
+            // 1. Deduct from wallet table
+            try (PreparedStatement ps1 = conn.prepareStatement(deductSql)) {
+                ps1.setInt(1, amount);
+                ps1.setString(2, email);
+                ps1.setInt(3, amount);
+                int updated = ps1.executeUpdate();
+                if (updated != 1) {
+                    conn.rollback();
+                    return false; // insufficient funds
+                }
+            }
 
-	
+            // 2. Insert withdrawal request
+            try (PreparedStatement ps2 = conn.prepareStatement(insertSql)) {
+                ps2.setString(1, email);
+                ps2.setInt(2, amount);
+                ps2.setString(3, method);
+                ps2.setString(4, details);
+                ps2.executeUpdate();
+            }
+
+            conn.commit();
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

@@ -1,15 +1,26 @@
 @echo off
-setlocal
+setlocal enabledelayedexpansion
 
-REM Set paths
-set JAVA_HOME=E:\assets\java\jdk-24.0.1
-set PATH=%JAVA_HOME%\bin;%PATH%
-set JAVAFX_HOME=E:\assets\java\javafx-sdk-24.0.1
+echo ========================================================
+echo   Robinhood Vanilla JDK Platform - Build and Run
+echo ========================================================
 
-REM Compile
-javac --module-path %JAVAFX_HOME%\lib --add-modules javafx.controls HelloWorld.java
+REM Find repository root from api\src\com\robinhood
+cd /d "%~dp0..\..\..\.."
 
-REM Run
-java --module-path %JAVAFX_HOME%\lib --add-modules javafx.controls HelloWorld
+echo [1/3] Creating output directory...
+if not exist "bin" mkdir bin
+
+echo [2/3] Compiling pure Vanilla Java project...
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$files = Get-ChildItem -Recurse -Filter *.java api\src, engine\src | Select-Object -ExpandProperty FullName; javac -encoding UTF-8 -d bin $files"
+if %ERRORLEVEL% neq 0 (
+    echo [ERROR] Compilation failed!
+    pause
+    exit /b %ERRORLEVEL%
+)
+
+echo [3/3] Running com.robinhood.Main...
+echo.
+java -cp "bin;api\src" com.robinhood.Main
 
 pause

@@ -1,24 +1,25 @@
 package com.robinhood.games.snl;
 
+import com.robinhood.db.DBManager;
 import com.robinhood.db.audit.GameAuditLogger;
 import com.robinhood.db.audit.GameAuditLoggerImpl;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.util.Map;
 
 public class SnakesLaddersController {
 
     private final SNLSessionManager sessionManager;
 
-    public SnakesLaddersController() throws Exception {
-        // Setup DB connection + audit logger (better to use a pool in prod)
-        Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/robinhood", "user", "password");
+    public SnakesLaddersController() {
+        Connection conn = null;
+        try {
+            conn = DBManager.getConnection();
+        } catch (Exception ignored) {}
         GameAuditLogger auditLogger = new GameAuditLoggerImpl(conn);
         sessionManager = SNLSessionManager.getInstance(auditLogger);
     }
 
-    // Example method signature for request handler
     public Map<String, Object> createGame(Map<String, Object> requestBody) {
         String playerId = (String) requestBody.get("playerId");
         int wager = (int) requestBody.get("wagerTokens");

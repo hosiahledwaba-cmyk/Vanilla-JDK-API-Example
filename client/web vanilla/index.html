@@ -2,26 +2,48 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>RobinHood Gaming Platform</title>
+  <title>RobinHood — Vanilla JDK Gaming Platform</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/style.css" />
 </head>
-<body class="bg-gray-100 text-gray-800">
+<body>
 
-  <!-- Main App Container -->
-  <div class="max-w-3xl mx-auto mt-8 p-4 bg-white rounded shadow">
-    <header class="flex justify-between items-center mb-4">
-      <h1 class="text-2xl font-bold text-blue-600">RobinHood</h1>
-      <button id="logoutBtn" class="hidden text-red-600 hover:underline">Logout</button>
-    </header>
+  <!-- Top Sticky Navigation Bar -->
+  <header class="app-header">
+    <div class="header-container">
+      <a href="#" class="brand" id="brandLogo">
+        <div class="brand-icon">🏹</div>
+        <span>RobinHood</span>
+      </a>
 
-    <!-- Dynamic Content Mount Point -->
+      <div class="nav-controls">
+        <div id="balanceChip" class="balance-chip hidden">
+          <span>🪙</span>
+          <span id="headerBalance">0</span>
+        </div>
+
+        <div id="userBadge" class="user-badge hidden">
+          <div class="user-avatar" id="headerAvatar">?</div>
+          <span id="headerUsername">Player</span>
+        </div>
+
+        <button id="logoutBtn" class="btn btn-secondary hidden" style="padding: 0.4rem 0.85rem; font-size: 0.85rem;">
+          Log Out
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main View Container -->
+  <main class="main-wrapper">
     <div id="app"></div>
-  </div>
+  </main>
 
-  <!-- JS Modules -->
-  <script src="scripts/main.js"></script>
-  <script src="scripts/auth.js"></script>
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Main Application Script -->
+  <script type="module" src="scripts/main.js"></script>
 
 </body>
 </html>

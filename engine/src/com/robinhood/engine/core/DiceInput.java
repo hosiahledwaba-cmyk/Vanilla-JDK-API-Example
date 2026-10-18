@@ -18,6 +18,8 @@ public class DiceInput {
 
     public double getIntensity() { return intensity; }
     public double getAngle() { return angle; }
+    public double intensity() { return intensity; }
+    public double angle() { return angle; }
     public long getTimestamp() { return timestamp; }
     public String getPlayerId() { return playerId; }
 

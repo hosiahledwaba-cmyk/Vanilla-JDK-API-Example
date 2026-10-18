@@ -1,9 +1,10 @@
 package com.robinhood.service;
 
-import com.robinhood.util.ConfigLoader;
+import com.robinhood.core.ConfigLoader;
 import com.robinhood.util.HttpClientUtil;
 import com.robinhood.util.JSONParser;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class BluVoucherService {
@@ -12,9 +13,19 @@ public class BluVoucherService {
 
     public static boolean redeemVoucher(String code, String email) throws Exception {
         var resp = HttpClientUtil.postJson(URL + "/redeem",
-            JSONParser.stringify(Map.of("voucherCode", code, "email", email)),
-            Map.of("Authorization", "Bearer " + KEY)
+            JSONParser.stringify(Map.of("voucherCode", code != null ? code : "", "email", email != null ? email : "")),
+            Map.of("Authorization", "Bearer " + (KEY != null ? KEY : ""))
         );
-        return "success".equalsIgnoreCase(resp.get("status").toString());
+        Object status = resp.get("status");
+        return status != null && "success".equalsIgnoreCase(status.toString());
+    }
+
+    public static Map<String, Object> handleWebhook(String rawJson, Map<String, String> headers) {
+        Map<String, String> data = JSONParser.parse(rawJson);
+        Map<String, Object> result = new HashMap<>();
+        result.put("txId", data.getOrDefault("txId", data.getOrDefault("id", "0")));
+        result.put("status", data.getOrDefault("status", "success"));
+        result.put("id", data.getOrDefault("voucherCode", "blu_mock"));
+        return result;
     }
 }
