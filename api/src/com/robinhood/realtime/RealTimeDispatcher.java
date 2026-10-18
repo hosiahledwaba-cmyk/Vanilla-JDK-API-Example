@@ -22,11 +22,11 @@ public class RealTimeDispatcher {
         // Send SSE headers
         String headers =
             "HTTP/1.1 200 OK\r\n" +
-            "Content-Type: text/event-stream\r\n" +
+            "Content-Type: text/event-stream; charset=utf-8\r\n" +
             "Cache-Control: no-cache\r\n" +
             "Access-Control-Allow-Origin: *\r\n" +
             "Connection: keep-alive\r\n\r\n";
-        channel.write(ByteBuffer.wrap(headers.getBytes()));
+        channel.write(ByteBuffer.wrap(headers.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
     }
 
     public static synchronized void unsubscribe(String sessionId, SocketChannel channel) {
@@ -40,7 +40,7 @@ public class RealTimeDispatcher {
         if (set == null || set.isEmpty()) return;
 
         String sse = "data: " + eventJson + "\n\n";
-        ByteBuffer buf = ByteBuffer.wrap(sse.getBytes());
+        ByteBuffer buf = ByteBuffer.wrap(sse.getBytes(java.nio.charset.StandardCharsets.UTF_8));
 
         for (Iterator<SocketChannel> it = set.iterator(); it.hasNext(); ) {
             SocketChannel ch = it.next();

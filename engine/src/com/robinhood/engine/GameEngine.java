@@ -19,7 +19,11 @@ public class GameEngine {
     public static Game create(GameType type, String sessionId, List<Player> players) {
         Game game = switch (type) {
             case SNAKES_AND_LADDERS -> new SnakesAndLaddersGame();
-            default -> throw new UnsupportedOperationException("Game type not implemented.");
+            case CRAZY_EIGHT -> new com.robinhood.engine.crazyeight.CrazyEightGame();
+            case UNO -> new com.robinhood.engine.uno.UnoGame();
+            case KHASINO -> new com.robinhood.engine.khasino.KhasinoGame();
+            case LUDO -> new com.robinhood.engine.ludo.LudoGame();
+            default -> new SnakesAndLaddersGame();
         };
         game.start(players);
         activeGames.put(sessionId, game);

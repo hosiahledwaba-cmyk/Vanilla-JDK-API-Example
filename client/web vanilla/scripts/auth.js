@@ -7,10 +7,17 @@ export const AuthModule = {
     function updateView() {
       container.innerHTML = `
         <div class="auth-container">
-          <div class="glass-card">
+          <div class="card" style="box-shadow: var(--shadow-pop); border-color: var(--border-medium); padding: 2.25rem;">
             <div class="auth-header">
-              <h2>${mode === 'login' ? 'Welcome Back' : 'Join RobinHood'}</h2>
-              <p>${mode === 'login' ? 'Log in to play Snakes & Ladders for real token wagers' : 'Create an account & claim 100 free tokens to start playing!'}</p>
+              <div style="width: 48px; height: 48px; border-radius: var(--radius-md); background: var(--surface-secondary); border: 1px solid var(--border-medium); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; font-size: 1.5rem; color: var(--accent-primary);">
+                🏹
+              </div>
+              <h2 style="font-size: 1.75rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 0.35rem;">
+                ${mode === 'login' ? 'Welcome Back' : 'Join RobinHood'}
+              </h2>
+              <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.45;">
+                ${mode === 'login' ? 'Sign in to access your multiplayer rooms, records, and token wallet.' : 'Create an account to claim 100 free tokens and challenge live opponents or tactical bots.'}
+              </p>
             </div>
 
             <div class="auth-toggle">
@@ -21,7 +28,7 @@ export const AuthModule = {
             <form id="authForm">
               <div class="form-group">
                 <label class="form-label" for="authUsername">Username or Email</label>
-                <input type="text" id="authUsername" class="form-input" placeholder="e.g. robin_hood" required autocomplete="username" />
+                <input type="text" id="authUsername" class="form-input" placeholder="e.g. player1@robinhood.io" required autocomplete="username" />
               </div>
 
               <div class="form-group">
@@ -29,13 +36,13 @@ export const AuthModule = {
                 <input type="password" id="authPassword" class="form-input" placeholder="••••••••" required autocomplete="current-password" />
               </div>
 
-              <button type="submit" id="authSubmitBtn" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
-                ${mode === 'login' ? 'Sign In' : 'Claim Tokens & Register'}
+              <button type="submit" id="authSubmitBtn" class="btn btn-primary" style="width: 100%; margin-top: 0.75rem; padding: 0.85rem; font-size: 1rem;">
+                ${mode === 'login' ? 'Sign In to Platform' : 'Claim 100 Tokens & Register'}
               </button>
             </form>
 
-            <div style="margin-top: 1.25rem; font-size: 0.85rem; color: var(--text-muted); text-align: center;">
-              🔒 100% Zero-Dependency Pure JDK standard backend with in-memory persistence
+            <div style="margin-top: 1.75rem; padding-top: 1.25rem; border-top: 1px solid var(--border-subtle); font-size: 0.78rem; color: var(--text-muted); text-align: center; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+              <span>🔒</span> Pure Vanilla JDK Backend • PostgreSQL 16 Persistence
             </div>
           </div>
         </div>

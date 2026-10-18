@@ -24,8 +24,7 @@ import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class Router {
 
@@ -86,11 +85,62 @@ public class Router {
         }
 
         // Static Files Serving from client/web vanilla
-        if (method.equals("GET")) {
+        if (method.equals("GET") || method.equals("HEAD")) {
             String staticFileResp = serveStaticFile(path);
             if (staticFileResp != null) {
                 return staticFileResp;
             }
+        }
+
+        // Swagger / API Docs & Live Monitoring Console
+        if ((method.equals("GET") || method.equals("HEAD")) && (path.equals("/docs") || path.equals("/swagger") || path.equals("/swagger-ui") || path.equals("/api-docs"))) {
+            return serveStaticFile("/docs.html");
+        }
+
+        // Live System Monitoring Endpoint
+        if (method.equals("GET") && (path.equals("/api/system/stats") || path.equals("/monitoring/stats") || path.equals("/api/monitoring"))) {
+            Runtime rt = Runtime.getRuntime();
+            long totalMem = rt.totalMemory();
+            long freeMem = rt.freeMemory();
+            long maxMem = rt.maxMemory();
+            long usedMem = totalMem - freeMem;
+            int activeThreads = Thread.activeCount();
+            int userCount = com.robinhood.db.DBManager.getUserCount();
+            int matchCount = com.robinhood.db.DBManager.getMatchCount();
+            int activeSessions = GameManager.getActiveSessionCount();
+            int openRooms = com.robinhood.game.RoomManager.getActiveRoomCount();
+            int queuedPlayers = com.robinhood.db.MatchmakerDao.getQueueCount();
+
+            String statsJson = "{" +
+                "\"status\":\"UP\"," +
+                "\"timestamp\":" + System.currentTimeMillis() + "," +
+                "\"server\":{" +
+                    "\"port\":8080," +
+                    "\"protocol\":\"HTTP/1.1 NIO\"," +
+                    "\"threads\":" + activeThreads + "," +
+                    "\"availableProcessors\":" + rt.availableProcessors() +
+                "}," +
+                "\"memory\":{" +
+                    "\"usedBytes\":" + usedMem + "," +
+                    "\"freeBytes\":" + freeMem + "," +
+                    "\"totalBytes\":" + totalMem + "," +
+                    "\"maxBytes\":" + maxMem +
+                "}," +
+                "\"database\":{" +
+                    "\"type\":\"PostgreSQL 16 (Docker)\"," +
+                    "\"port\":5433," +
+                    "\"connected\":" + com.robinhood.db.DBManager.isAvailable() + "," +
+                    "\"totalUsers\":" + userCount + "," +
+                    "\"totalMatches\":" + matchCount +
+                "}," +
+                "\"engine\":{" +
+                    "\"activeGameSessions\":" + activeSessions + "," +
+                    "\"openWaitingRooms\":" + openRooms + "," +
+                    "\"queuedPlayers\":" + queuedPlayers + "," +
+                    "\"supportedGames\":[\"KHASINO\",\"CRAZY_EIGHT\",\"UNO\",\"SNAKES_AND_LADDERS\",\"LUDO\"]" +
+                "}" +
+            "}";
+            return ResponseBuilder.json(200, statsJson);
         }
 
         // Health & Metrics
@@ -115,9 +165,10 @@ public class Router {
             return PaymentController.webhook(gateway, body, headers);
         }
 
-        // Real-time SSE Stream Endpoint (/stream or /ws/{sessionId})
-        if (method.equals("GET") && (path.equals("/stream") || path.startsWith("/ws/"))) {
+        // Real-time SSE Stream Endpoint (/events, /stream, or /ws/{sessionId})
+        if (method.equals("GET") && (path.equals("/events") || path.equals("/stream") || path.startsWith("/ws/"))) {
             String sessionId = path.startsWith("/ws/") ? path.substring("/ws/".length()) : queryParams.get("sessionId");
+            String roomId = queryParams.get("roomId");
             String token = queryParams.get("token");
             if (token == null && (headers.containsKey("Authorization") || headers.containsKey("authorization"))) {
                 String authH = headers.getOrDefault("Authorization", headers.get("authorization"));
@@ -127,14 +178,27 @@ public class Router {
                 return ResponseBuilder.json(401, "Invalid token");
             }
             String email = AuthManager.getEmailFromToken(token);
-            GameSession session = GameManager.getSession(sessionId);
-            if (session == null || session.getPlayers().stream().noneMatch(p -> p.getEmail().equals(email))) {
-                return ResponseBuilder.json(403, "Forbidden");
+
+            String topic = null;
+            if (sessionId != null && !sessionId.isBlank()) {
+                GameSession session = GameManager.getSession(sessionId);
+                if (session == null || session.getPlayers().stream().noneMatch(p -> p.getEmail().equalsIgnoreCase(email))) {
+                    return ResponseBuilder.json(403, "Forbidden");
+                }
+                topic = sessionId;
+            } else if (roomId != null && !roomId.isBlank()) {
+                com.robinhood.db.RoomDao.Room room = com.robinhood.game.RoomManager.getRoom(roomId);
+                if (room == null || room.members.stream().noneMatch(m -> m.playerId.equalsIgnoreCase(email))) {
+                    return ResponseBuilder.json(403, "Forbidden");
+                }
+                topic = room.id;
+            } else {
+                return ResponseBuilder.json(400, "Missing sessionId or roomId");
             }
 
             if (clientChannel != null) {
                 try {
-                    RealTimeDispatcher.subscribe(sessionId, clientChannel);
+                    RealTimeDispatcher.subscribe(topic, clientChannel);
                     return null; // Keep channel open for SSE
                 } catch (IOException e) {
                     return ResponseBuilder.json(500, "SSE subscription error");
@@ -204,7 +268,7 @@ public class Router {
         }
 
         // Queue Matchmaking
-        if (method.equals("POST") && (path.equals("/games/queue/join") || path.equals("/queue/join"))) {
+        if (method.equals("POST") && (path.equals("/games/queue/join") || path.equals("/queue/join") || path.equals("/games/quick-match"))) {
             Map<String, String> data = JSONParser.parse(body);
             int bet = 50;
             try {
@@ -213,8 +277,12 @@ public class Router {
             if (WalletController.getBalance(email) < bet) {
                 return ResponseBuilder.json(400, "{\"status\":\"error\",\"message\":\"Insufficient balance for bet of " + bet + " tokens\"}");
             }
+            String gameReq = data.getOrDefault("game", data.getOrDefault("gameType", "snl"));
+            com.robinhood.engine.GameType gt = resolveGameType(gameReq);
+            int maxPlayers = 2;
+            try { maxPlayers = Integer.parseInt(data.getOrDefault("maxPlayers", "2")); } catch (Exception ignored) {}
             Player player = new Player(email, token);
-            String matchedSession = Matchmaker.joinQueue(player, bet);
+            String matchedSession = Matchmaker.joinQueue(player, bet, gt, null, maxPlayers);
             if (matchedSession != null) {
                 return ResponseBuilder.json(200, "{\"status\":\"matched\",\"sessionId\":\"" + matchedSession + "\"}");
             }
@@ -227,6 +295,299 @@ public class Router {
                 return ResponseBuilder.json(200, "{\"status\":\"matched\",\"sessionId\":\"" + matchedSession + "\"}");
             }
             return ResponseBuilder.json(200, "{\"status\":\"queued\",\"message\":\"Waiting for more players...\"}");
+        }
+
+        if (method.equals("POST") && (path.equals("/games/queue/cancel") || path.equals("/queue/cancel"))) {
+            Matchmaker.cancelQueue(email);
+            return ResponseBuilder.json(200, "{\"cancelled\":true}");
+        }
+
+        // Custom Multiplayer Room Endpoints
+        if (method.equals("POST") && path.equals("/rooms/create")) {
+            Map<String, String> data = JSONParser.parse(body);
+            String gameReq = data.getOrDefault("game", data.getOrDefault("gameType", "SNAKES_AND_LADDERS"));
+            String khasinoMode = data.get("khasinoMode");
+            String aiDifficulty = data.getOrDefault("aiDifficulty", "MEDIUM");
+            int maxPlayers = 2;
+            try { maxPlayers = Integer.parseInt(data.getOrDefault("maxPlayers", "2")); } catch (Exception ignored) {}
+            int wager = 50;
+            try { wager = Integer.parseInt(data.getOrDefault("wager", data.getOrDefault("wagerAmount", data.getOrDefault("bet", "50")))); } catch (Exception ignored) {}
+            boolean isBotMatch = Boolean.parseBoolean(data.getOrDefault("isBotMatch", "false"));
+
+            try {
+                com.robinhood.db.RoomDao.Room room = com.robinhood.game.RoomManager.createRoom(
+                    email, gameReq, khasinoMode, aiDifficulty, maxPlayers, wager, isBotMatch
+                );
+                return ResponseBuilder.json(201, "{\"room\":" + room.toJson() + "}");
+            } catch (Exception e) {
+                return ResponseBuilder.json(400, "{\"error\":\"" + e.getMessage() + "\"}");
+            }
+        }
+
+        if (method.equals("POST") && path.equals("/rooms/join")) {
+            Map<String, String> data = JSONParser.parse(body);
+            String codeOrId = data.getOrDefault("roomCode", data.getOrDefault("code", data.get("roomId")));
+            if (codeOrId == null || codeOrId.isBlank()) {
+                return ResponseBuilder.json(400, "{\"error\":\"Missing roomCode or roomId\"}");
+            }
+            try {
+                com.robinhood.db.RoomDao.Room room = com.robinhood.game.RoomManager.joinRoom(codeOrId.trim(), email);
+                return ResponseBuilder.json(200, "{\"room\":" + room.toJson() + "}");
+            } catch (Exception e) {
+                return ResponseBuilder.json(400, "{\"error\":\"" + e.getMessage() + "\"}");
+            }
+        }
+
+        if (method.equals("GET") && (path.startsWith("/rooms/info") || path.matches("^/rooms/[^/]+$"))) {
+            String roomId = path.startsWith("/rooms/info") ? queryParams.getOrDefault("roomId", queryParams.get("roomCode")) : path.substring("/rooms/".length());
+            com.robinhood.db.RoomDao.Room room = com.robinhood.game.RoomManager.getRoom(roomId);
+            if (room == null) return ResponseBuilder.json(404, "{\"error\":\"Room not found\"}");
+            return ResponseBuilder.json(200, "{\"room\":" + room.toJson() + "}");
+        }
+
+        if (method.equals("POST") && (path.equals("/rooms/ready") || path.endsWith("/ready"))) {
+            Map<String, String> data = JSONParser.parse(body);
+            String roomId = data.getOrDefault("roomId", path.replace("/rooms/", "").replace("/ready", ""));
+            boolean ready = Boolean.parseBoolean(data.getOrDefault("ready", "true"));
+            try {
+                com.robinhood.db.RoomDao.Room room = com.robinhood.game.RoomManager.setReady(roomId, email, ready);
+                return ResponseBuilder.json(200, "{\"room\":" + room.toJson() + "}");
+            } catch (Exception e) {
+                return ResponseBuilder.json(400, "{\"error\":\"" + e.getMessage() + "\"}");
+            }
+        }
+
+        if (method.equals("POST") && (path.equals("/rooms/leave") || path.endsWith("/leave"))) {
+            Map<String, String> data = JSONParser.parse(body);
+            String roomId = data.getOrDefault("roomId", path.replace("/rooms/", "").replace("/leave", ""));
+            com.robinhood.game.RoomManager.leaveRoom(roomId, email);
+            return ResponseBuilder.json(200, "{\"left\":true}");
+        }
+
+        if (method.equals("POST") && (path.equals("/rooms/start") || path.endsWith("/start"))) {
+            Map<String, String> data = JSONParser.parse(body);
+            String roomId = data.getOrDefault("roomId", path.replace("/rooms/", "").replace("/start", ""));
+            boolean allowBotFill = Boolean.parseBoolean(data.getOrDefault("allowBotFill", "false"));
+            try {
+                GameSession session = com.robinhood.game.RoomManager.startMatch(roomId, email, allowBotFill);
+                return ResponseBuilder.json(200, "{\"sessionId\":\"" + session.getSessionId() + "\",\"gameType\":\"" + session.getGameType().name() + "\"}");
+            } catch (Exception e) {
+                return ResponseBuilder.json(400, "{\"error\":\"" + e.getMessage() + "\"}");
+            }
+        }
+
+        // Forfeit Active Match
+        if (method.equals("POST") && (path.equals("/games/forfeit") || path.equals("/forfeit"))) {
+            Map<String, String> data = JSONParser.parse(body);
+            String sId = data.get("sessionId");
+            GameSession session = GameManager.getSession(sId);
+            if (session == null) return ResponseBuilder.json(404, "{\"error\":\"Session not found\"}");
+            boolean ok = session.forfeit(email);
+            return ResponseBuilder.json(ok ? 200 : 400, "{\"status\":\"" + (ok ? "ok" : "failed") + "\",\"forfeited\":" + ok + ",\"winner\":\"" + (session.getWinner() != null ? session.getWinner() : "") + "\",\"forfeitedBy\":\"" + email + "\"}");
+        }
+
+        // Match Results & History
+        if (method.equals("GET") && (path.equals("/games/history") || path.equals("/history") || path.equals("/match/history"))) {
+            List<com.robinhood.db.MatchSessionDao.GameResultRecord> history = com.robinhood.db.MatchSessionDao.getPlayerHistory(email);
+            StringBuilder sb = new StringBuilder("[");
+            for (int i = 0; i < history.size(); i++) {
+                com.robinhood.db.MatchSessionDao.GameResultRecord r = history.get(i);
+                if (i > 0) sb.append(",");
+                sb.append("{")
+                  .append("\"matchId\":\"").append(r.matchId).append("\",")
+                  .append("\"gameType\":\"").append(r.gameType).append("\",")
+                  .append("\"isWinner\":").append(r.isWinner).append(",")
+                  .append("\"isForfeit\":").append(r.isForfeit).append(",")
+                  .append("\"score\":").append(r.score).append(",")
+                  .append("\"outcome\":\"").append(r.outcome).append("\",")
+                  .append("\"createdAt\":\"").append(r.createdAt != null ? r.createdAt.toString() : "").append("\"")
+                  .append("}");
+            }
+            sb.append("]");
+            return ResponseBuilder.json(200, "{\"history\":" + sb.toString() + "}");
+        }
+
+        // Generic Session Info
+        if (method.equals("GET") && (path.startsWith("/games/session/") || path.startsWith("/session/"))) {
+            String sId = path.startsWith("/games/session/") ? path.substring("/games/session/".length()) : path.substring("/session/".length());
+            GameSession session = GameManager.getSession(sId);
+            if (session == null) return ResponseBuilder.json(404, "{\"error\":\"Session not found\"}");
+            return ResponseBuilder.json(200,
+                "{" +
+                "\"sessionId\":\"" + sId + "\"," +
+                "\"gameType\":\"" + session.getGameType().name() + "\"," +
+                "\"started\":" + session.isStarted() + "," +
+                "\"isOver\":" + session.isGameOver() + "," +
+                "\"winner\":" + (session.getWinner() != null ? "\"" + session.getWinner() + "\"" : "null") + "," +
+                "\"currentTurn\":\"" + (session.getCurrentTurnPlayer() != null ? session.getCurrentTurnPlayer() : "") + "\"," +
+                "\"wager\":" + session.getWagerAmount() + "," +
+                "\"maxPlayers\":" + session.getMaxPlayers() + "," +
+                "\"players\":" + session.getPlayersJson() + "," +
+                "\"khasinoMode\":\"" + (session.getKhasinoMode() != null ? session.getKhasinoMode().name() : "") + "\"," +
+                "\"aiDifficulty\":\"" + session.getKhasinoDifficulty().name() + "\"" +
+                "}"
+            );
+        }
+
+        // Card Game Endpoints (Crazy Eights & Uno)
+        if (method.equals("GET") && path.startsWith("/games/card/state")) {
+            String sId = path.startsWith("/games/card/state/") ? path.substring("/games/card/state/".length()) : queryParams.get("sessionId");
+            GameSession session = GameManager.getSession(sId);
+            if (session == null) return ResponseBuilder.json(404, "{\"error\":\"Session not found\"}");
+            String stateJson = (session.getGameType() == com.robinhood.engine.GameType.UNO) ?
+                    session.getUnoGame().toJson() : session.getCrazyEightGame().toJson();
+            return ResponseBuilder.json(200, "{\"sessionId\":\"" + sId + "\",\"gameType\":\"" + session.getGameType().name() + "\",\"state\":" + stateJson + "}");
+        }
+
+        if (method.equals("POST") && path.startsWith("/games/card/play")) {
+            String sId = path.startsWith("/games/card/play/") ? path.substring("/games/card/play/".length()) : queryParams.get("sessionId");
+            GameSession session = GameManager.getSession(sId);
+            if (session == null) return ResponseBuilder.json(404, "{\"error\":\"Session not found\"}");
+            Map<String, String> data = JSONParser.parse(body);
+            String cardId = data.get("cardId");
+            String colorOrSuit = data.getOrDefault("color", data.get("suit"));
+            Map<String, Object> res;
+            if (session.getGameType() == com.robinhood.engine.GameType.UNO) {
+                res = session.submitUnoMove(email, cardId, colorOrSuit);
+            } else {
+                res = session.submitCrazyEightMove(email, cardId, colorOrSuit);
+            }
+            boolean ok = Boolean.TRUE.equals(res.get("success"));
+            return ResponseBuilder.json(ok ? 200 : 400, JSONParser.stringify(res));
+        }
+
+        if (method.equals("POST") && path.startsWith("/games/card/draw")) {
+            String sId = path.startsWith("/games/card/draw/") ? path.substring("/games/card/draw/".length()) : queryParams.get("sessionId");
+            GameSession session = GameManager.getSession(sId);
+            if (session == null) return ResponseBuilder.json(404, "{\"error\":\"Session not found\"}");
+            Map<String, Object> res = (session.getGameType() == com.robinhood.engine.GameType.UNO) ?
+                    session.submitUnoDraw(email) : session.submitCrazyEightDraw(email);
+            return ResponseBuilder.json(200, JSONParser.stringify(res));
+        }
+
+        if (method.equals("POST") && path.startsWith("/games/card/pass")) {
+            String sId = path.startsWith("/games/card/pass/") ? path.substring("/games/card/pass/".length()) : queryParams.get("sessionId");
+            GameSession session = GameManager.getSession(sId);
+            if (session == null) return ResponseBuilder.json(404, "{\"error\":\"Session not found\"}");
+            Map<String, Object> res = (session.getGameType() == com.robinhood.engine.GameType.UNO) ?
+                    session.submitUnoPass(email) : session.submitCrazyEightPass(email);
+            return ResponseBuilder.json(200, JSONParser.stringify(res));
+        }
+
+        // South African Khasino (Kasi Kasino) Endpoints
+        if (method.equals("GET") && path.startsWith("/games/khasino/state")) {
+            String sId = path.startsWith("/games/khasino/state/") ? path.substring("/games/khasino/state/".length()) : queryParams.get("sessionId");
+            GameSession session = GameManager.getSession(sId);
+            if (session == null) return ResponseBuilder.json(404, "{\"error\":\"Session not found\"}");
+            return ResponseBuilder.json(200, "{\"sessionId\":\"" + sId + "\",\"gameType\":\"KHASINO\",\"state\":" + session.getKhasinoGame().toJson(email) + "}");
+        }
+
+        if (method.equals("GET") && path.startsWith("/games/khasino/legal-moves")) {
+            String sId = path.startsWith("/games/khasino/legal-moves/") ? path.substring("/games/khasino/legal-moves/".length()) : queryParams.get("sessionId");
+            GameSession session = GameManager.getSession(sId);
+            if (session == null) return ResponseBuilder.json(404, "{\"error\":\"Session not found\"}");
+            List<com.robinhood.engine.khasino.KhasinoAction> actions = session.getKhasinoGame().getLegalActions(email);
+            StringBuilder sb = new StringBuilder("[");
+            for (int i = 0; i < actions.size(); i++) {
+                if (i > 0) sb.append(",");
+                sb.append(actions.get(i).toJson());
+            }
+            sb.append("]");
+            return ResponseBuilder.json(200, "{\"actions\":" + sb.toString() + "}");
+        }
+
+        if (method.equals("POST") && path.startsWith("/games/khasino/action")) {
+            String sId = path.startsWith("/games/khasino/action/") ? path.substring("/games/khasino/action/".length()) : queryParams.get("sessionId");
+            GameSession session = GameManager.getSession(sId);
+            if (session == null) return ResponseBuilder.json(404, "{\"error\":\"Session not found\"}");
+
+            Map<String, String> data = JSONParser.parse(body);
+            String typeStr = data.getOrDefault("type", "DRIFT");
+            com.robinhood.engine.khasino.KhasinoAction.ActionType actionType;
+            try {
+                actionType = com.robinhood.engine.khasino.KhasinoAction.ActionType.valueOf(typeStr.toUpperCase());
+            } catch (Exception e) {
+                actionType = com.robinhood.engine.khasino.KhasinoAction.ActionType.DRIFT;
+            }
+            String playedCardId = data.get("playedCardId");
+
+            List<String> floorIds = new ArrayList<>();
+            String rawFloor = data.get("targetFloorCardIds");
+            if (rawFloor != null && !rawFloor.isBlank()) {
+                for (String id : rawFloor.replace("[", "").replace("]", "").replace("\"", "").split(",")) {
+                    String trimmed = id.trim();
+                    if (!trimmed.isEmpty()) floorIds.add(trimmed);
+                }
+            }
+
+            List<String> buildIds = new ArrayList<>();
+            String rawBuilds = data.get("targetBuildIds");
+            if (rawBuilds != null && !rawBuilds.isBlank()) {
+                for (String id : rawBuilds.replace("[", "").replace("]", "").replace("\"", "").split(",")) {
+                    String trimmed = id.trim();
+                    if (!trimmed.isEmpty()) buildIds.add(trimmed);
+                }
+            }
+
+            String targetBuildId = data.get("targetBuildId");
+            int declVal = 0;
+            try {
+                declVal = Integer.parseInt(data.getOrDefault("declaredValue", "0"));
+            } catch (Exception ignored) {}
+
+            String stolenCardId = data.get("stolenCardId");
+            String stolenOpponentId = data.get("stolenOpponentId");
+
+            com.robinhood.engine.khasino.KhasinoAction action = new com.robinhood.engine.khasino.KhasinoAction(
+                    actionType, playedCardId, floorIds, buildIds, targetBuildId, declVal, stolenCardId, stolenOpponentId);
+
+            Map<String, Object> res = session.submitKhasinoMove(email, action);
+            boolean ok = Boolean.TRUE.equals(res.get("success"));
+            return ResponseBuilder.json(ok ? 200 : 400, JSONParser.stringify(res));
+        }
+
+        // Ludo Game Endpoints
+        if (method.equals("GET") && path.startsWith("/games/ludo/state")) {
+            String sId = path.startsWith("/games/ludo/state/") ? path.substring("/games/ludo/state/".length()) : queryParams.get("sessionId");
+            GameSession session = GameManager.getSession(sId);
+            if (session == null) return ResponseBuilder.json(404, "{\"error\":\"Session not found\"}");
+            return ResponseBuilder.json(200, "{\"sessionId\":\"" + sId + "\",\"gameType\":\"LUDO\",\"state\":" + session.getLudoGame().toJson(email) + "}");
+        }
+
+        if (method.equals("GET") && path.startsWith("/games/ludo/legal-moves")) {
+            String sId = path.startsWith("/games/ludo/legal-moves/") ? path.substring("/games/ludo/legal-moves/".length()) : queryParams.get("sessionId");
+            GameSession session = GameManager.getSession(sId);
+            if (session == null) return ResponseBuilder.json(404, "{\"error\":\"Session not found\"}");
+            List<Integer> moves = session.getLudoGame().getLegalMoves(email);
+            return ResponseBuilder.json(200, "{\"legalMoves\":" + moves.toString() + ",\"roll\":" + session.getLudoGame().getCurrentRoll() + "}");
+        }
+
+        if (method.equals("POST") && path.startsWith("/games/ludo/roll")) {
+            String sId = path.startsWith("/games/ludo/roll/") ? path.substring("/games/ludo/roll/".length()) : queryParams.get("sessionId");
+            GameSession session = GameManager.getSession(sId);
+            if (session == null) return ResponseBuilder.json(404, "{\"error\":\"Session not found\"}");
+            Map<String, String> data = JSONParser.parse(body);
+            int forcedRoll = -1;
+            if (data.containsKey("forcedRoll")) {
+                try { forcedRoll = Integer.parseInt(data.get("forcedRoll")); } catch (Exception ignored) {}
+            }
+            Map<String, Object> res = session.submitLudoRoll(email, forcedRoll);
+            boolean ok = Boolean.TRUE.equals(res.get("success"));
+            return ResponseBuilder.json(ok ? 200 : 400, JSONParser.stringify(res));
+        }
+
+        if (method.equals("POST") && path.startsWith("/games/ludo/move")) {
+            String sId = path.startsWith("/games/ludo/move/") ? path.substring("/games/ludo/move/".length()) : queryParams.get("sessionId");
+            GameSession session = GameManager.getSession(sId);
+            if (session == null) return ResponseBuilder.json(404, "{\"error\":\"Session not found\"}");
+            Map<String, String> data = JSONParser.parse(body);
+            int tokenId = 0;
+            try {
+                tokenId = Integer.parseInt(data.getOrDefault("tokenId", "0"));
+            } catch (Exception ignored) {}
+            Map<String, Object> res = session.submitLudoMove(email, tokenId);
+            boolean ok = Boolean.TRUE.equals(res.get("success"));
+            return ResponseBuilder.json(ok ? 200 : 400, JSONParser.stringify(res));
         }
 
         // Snakes and Ladders game endpoints
@@ -294,17 +655,45 @@ public class Router {
         // Game management
         if (method.equals("POST") && path.equals("/create-game")) {
             Map<String, String> data = JSONParser.parse(body);
-            int maxPlayers = Integer.parseInt(data.getOrDefault("maxPlayers", "3"));
+            int maxPlayers = Integer.parseInt(data.getOrDefault("maxPlayers", "2"));
             int wagerAmount = Integer.parseInt(data.getOrDefault("bet", "50"));
             if (wagerAmount < 0) return ResponseBuilder.json(400, "Invalid bet amount");
 
-            GameSession session = GameManager.createSession(maxPlayers, wagerAmount);
+            String gameReq = data.getOrDefault("game", data.getOrDefault("gameType", "snl"));
+            com.robinhood.engine.GameType gt = resolveGameType(gameReq);
+
+            GameSession session = GameManager.createSession(maxPlayers, wagerAmount, gt);
+            if (gt == com.robinhood.engine.GameType.KHASINO) {
+                String modeReq = data.getOrDefault("khasinoMode", data.getOrDefault("mode", ""));
+                if (!modeReq.isBlank()) {
+                    String m = modeReq.toLowerCase();
+                    if (m.contains("partner") || m.contains("2v2")) {
+                        session.setKhasinoMode(com.robinhood.engine.khasino.KhasinoGame.Mode.FOUR_PLAYER_PARTNERSHIPS);
+                    } else if (m.contains("single") || m.equals("4p") || m.equals("4")) {
+                        session.setKhasinoMode(com.robinhood.engine.khasino.KhasinoGame.Mode.FOUR_PLAYER_SINGLES);
+                    } else if (m.contains("3") || m.equals("3p")) {
+                        session.setKhasinoMode(com.robinhood.engine.khasino.KhasinoGame.Mode.THREE_PLAYER);
+                    } else {
+                        session.setKhasinoMode(com.robinhood.engine.khasino.KhasinoGame.Mode.TWO_PLAYER);
+                    }
+                } else {
+                    if (maxPlayers == 3) session.setKhasinoMode(com.robinhood.engine.khasino.KhasinoGame.Mode.THREE_PLAYER);
+                    else if (maxPlayers == 4) session.setKhasinoMode(com.robinhood.engine.khasino.KhasinoGame.Mode.FOUR_PLAYER_PARTNERSHIPS);
+                    else session.setKhasinoMode(com.robinhood.engine.khasino.KhasinoGame.Mode.TWO_PLAYER);
+                }
+
+                String diffReq = data.getOrDefault("difficulty", data.getOrDefault("aiDifficulty", "MEDIUM"));
+                try {
+                    session.setKhasinoDifficulty(com.robinhood.engine.khasino.KhasinoAi.Difficulty.valueOf(diffReq.toUpperCase()));
+                } catch (Exception ignored) {}
+            }
+
             Player player = new Player(email, token);
             boolean joined = session.addPlayer(player);
             if (!joined) {
                 return ResponseBuilder.json(409, "Unable to join created game");
             }
-            return ResponseBuilder.json(201, "{\"sessionId\":\"" + session.getSessionId() + "\"}");
+            return ResponseBuilder.json(201, "{\"sessionId\":\"" + session.getSessionId() + "\",\"gameType\":\"" + gt.name() + "\"}");
         }
 
         if (method.equals("POST") && path.equals("/join-game")) {
@@ -354,7 +743,11 @@ public class Router {
             String sessionId = data.get("sessionId");
             GameSession session = GameManager.getSession(sessionId);
             if (session != null) {
-                session.removePlayer(email);
+                if (session.isStarted()) {
+                    session.forfeit(email);
+                } else {
+                    session.removePlayer(email);
+                }
             }
             return ResponseBuilder.json(200, "{\"quit\":true}");
         }
@@ -609,5 +1002,18 @@ public class Router {
         if (lower.endsWith(".png")) return "image/png";
         if (lower.endsWith(".ico")) return "image/x-icon";
         return "text/plain; charset=utf-8";
+    }
+
+    private static com.robinhood.engine.GameType resolveGameType(String str) {
+        if (str == null) return com.robinhood.engine.GameType.SNAKES_AND_LADDERS;
+        String s = str.trim().toLowerCase();
+        if (s.contains("uno")) return com.robinhood.engine.GameType.UNO;
+        if (s.contains("crazy") || s.contains("eight") || s.equals("c8") || s.equals("crazy8"))
+            return com.robinhood.engine.GameType.CRAZY_EIGHT;
+        if (s.contains("khasino") || s.contains("kasino") || s.contains("kasi"))
+            return com.robinhood.engine.GameType.KHASINO;
+        if (s.contains("ludo"))
+            return com.robinhood.engine.GameType.LUDO;
+        return com.robinhood.engine.GameType.SNAKES_AND_LADDERS;
     }
 }

@@ -1,121 +1,81 @@
 package com.robinhood.game;
 
 import com.robinhood.controller.WalletController;
+import com.robinhood.db.MatchmakerDao;
+import com.robinhood.db.RoomDao;
+import com.robinhood.realtime.RealTimeDispatcher;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class Matchmaker {
 
-    // Key: wager_amount + player_count
-    private static final Map<String, List<PlayerEntry>> waitingQueues = new ConcurrentHashMap<>();
-    private static final int XP_TOLERANCE = 100; // Allow ±100 XP
-
-    private static final Map<String, String> playerMatchedSession = new ConcurrentHashMap<>();
-    private static final Map<String, Long> playerEnqueuedTime = new ConcurrentHashMap<>();
-    private static final Map<String, Integer> playerQueuedWager = new ConcurrentHashMap<>();
-
-    private static class PlayerEntry {
-        Player player;
-        int xp;
-
-        PlayerEntry(Player player, int xp) {
-            this.player = player;
-            this.xp = xp;
-        }
+    public static synchronized String joinQueue(Player player, int wager, com.robinhood.engine.GameType gameType) {
+        return joinQueue(player, wager, gameType, null, 2);
     }
 
-    public static synchronized String joinQueue(Player player, int wager) {
+    public static synchronized String requestMatch(Player player, int wager, int maxPlayers, int xp) {
+        return joinQueue(player, wager, com.robinhood.engine.GameType.SNAKES_AND_LADDERS, null, maxPlayers);
+    }
+
+    public static synchronized String joinQueue(Player player, int wager, com.robinhood.engine.GameType gameType,
+                                                String khasinoMode, int maxPlayers) {
         String email = player.getEmail();
-        playerMatchedSession.remove(email);
-        playerEnqueuedTime.put(email, System.currentTimeMillis());
-        playerQueuedWager.put(email, wager);
+        if (maxPlayers < 2) maxPlayers = 2;
+        if (wager > 0 && WalletController.getBalance(email) < wager) {
+            throw new IllegalArgumentException("Insufficient balance for wager of " + wager);
+        }
 
-        // Check if there's someone else waiting with the same wager
-        for (Map.Entry<String, Integer> entry : playerQueuedWager.entrySet()) {
-            String waitingEmail = entry.getKey();
-            if (!waitingEmail.equals(email) && entry.getValue() == wager) {
-                // Match with waiting player!
-                Player waitingPlayer = new Player(waitingEmail, "");
-                GameSession session = GameManager.createSession(2, wager);
-                session.addPlayer(waitingPlayer);
-                session.addPlayer(player);
-                session.start();
+        String gtStr = (gameType != null) ? gameType.name() : "SNAKES_AND_LADDERS";
 
-                playerQueuedWager.remove(waitingEmail);
-                playerQueuedWager.remove(email);
-                playerEnqueuedTime.remove(waitingEmail);
-                playerEnqueuedTime.remove(email);
+        // Enqueue into PostgreSQL
+        MatchmakerDao.enqueue(email, gtStr, khasinoMode, maxPlayers, wager);
 
-                playerMatchedSession.put(waitingEmail, session.getSessionId());
-                playerMatchedSession.put(email, session.getSessionId());
+        // Try atomic matchmaking in PostgreSQL
+        String targetSessionId = "mm-" + UUID.randomUUID().toString();
+        List<String> matchedPlayers = MatchmakerDao.tryMatch(gtStr, khasinoMode, maxPlayers, wager, targetSessionId);
+
+        if (!matchedPlayers.isEmpty()) {
+            // Group of compatible human players matched!
+            try {
+                String hostEmail = matchedPlayers.get(0);
+                RoomDao.Room room = RoomManager.createRoom(hostEmail, gtStr, khasinoMode, "MEDIUM", maxPlayers, wager, false);
+
+                // Add remaining players
+                for (int i = 1; i < matchedPlayers.size(); i++) {
+                    RoomManager.joinRoom(room.id, matchedPlayers.get(i));
+                }
+
+                // Start match automatically for matched players
+                GameSession session = RoomManager.startMatch(room.id, hostEmail, false, targetSessionId);
+
+                // Notify all matched players via their personal channels and room channel
+                for (String pId : matchedPlayers) {
+                    RealTimeDispatcher.publish(pId, "{\"type\":\"match_found\",\"sessionId\":\"" + session.getSessionId() + "\",\"gameType\":\"" + gtStr + "\"}");
+                }
 
                 return session.getSessionId();
+            } catch (Exception e) {
+                System.err.println("[Matchmaker] Error launching matched game: " + e.getMessage());
             }
         }
 
-        return null;
+        return null; // Waiting for more human players
     }
 
     public static synchronized String pollQueue(String email) {
-        String matched = playerMatchedSession.remove(email);
-        if (matched != null) return matched;
-
-        Long enqueuedAt = playerEnqueuedTime.get(email);
-        if (enqueuedAt != null && System.currentTimeMillis() - enqueuedAt >= 2500) {
-            // Auto match with RobinBot after 2.5s in queue so player can play immediately
-            int wager = playerQueuedWager.getOrDefault(email, 50);
-            playerQueuedWager.remove(email);
-            playerEnqueuedTime.remove(email);
-
-            GameSession session = GameManager.createSession(2, wager);
-            session.addPlayer(new Player(email, ""));
-            WalletController.credit("RobinBot", wager * 10);
-            session.addPlayer(new Player("RobinBot", "bot-token"));
-            session.start();
-
-            playerMatchedSession.put(email, session.getSessionId());
-            return session.getSessionId();
+        MatchmakerDao.QueueStatus status = MatchmakerDao.checkStatus(email);
+        if ("MATCHED".equalsIgnoreCase(status.status) && status.matchedRoomId != null) {
+            // Check if room or session is created
+            RoomDao.Room r = RoomManager.getRoom(status.matchedRoomId);
+            if (r != null) {
+                return status.matchedRoomId;
+            }
+            return status.matchedRoomId;
         }
-
         return null;
     }
 
-    public static synchronized String requestMatch(Player player, int wager, int playerCount, int playerXP) {
-        String key = wager + "x" + playerCount;
-
-        List<PlayerEntry> queue = waitingQueues.getOrDefault(key, new ArrayList<>());
-
-        // Filter queue for fair XP proximity
-        List<PlayerEntry> compatible = new ArrayList<>();
-        for (PlayerEntry entry : queue) {
-            if (Math.abs(entry.xp - playerXP) <= XP_TOLERANCE) {
-                compatible.add(entry);
-            }
-        }
-
-        if (compatible.size() >= playerCount - 1) {
-            // Match found!
-            List<PlayerEntry> finalGroup = new ArrayList<>(compatible.subList(0, playerCount - 1));
-            finalGroup.add(new PlayerEntry(player, playerXP));
-
-            GameSession session = GameManager.createSession(playerCount, wager);
-            for (PlayerEntry entry : finalGroup) {
-                boolean ok = session.addPlayer(entry.player);
-                if (!ok) return null; // If any wallet fails, abort match
-            }
-            session.start();
-
-            // Remove matched players from queue
-            queue.removeAll(finalGroup);
-            waitingQueues.put(key, queue);
-
-            return session.getSessionId();
-        }
-
-        // No match yet — enqueue
-        queue.add(new PlayerEntry(player, playerXP));
-        waitingQueues.put(key, queue);
-        return null; // waiting
+    public static synchronized void cancelQueue(String email) {
+        MatchmakerDao.cancel(email);
     }
 }

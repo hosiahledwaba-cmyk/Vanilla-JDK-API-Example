@@ -39,26 +39,35 @@ public class RobinServer {
             System.out.println("RobinServer NIO running on port " + port);
 
             while (running && selector.isOpen()) {
-                int selected = selector.select(1000);
-                if (selected == 0) continue;
+                try {
+                    int selected = selector.select(1000);
+                    if (selected == 0) continue;
 
-                Iterator<SelectionKey> keys = selector.selectedKeys().iterator();
-                while (keys.hasNext()) {
-                    SelectionKey key = keys.next();
-                    keys.remove();
+                    Iterator<SelectionKey> keys = selector.selectedKeys().iterator();
+                    while (keys.hasNext()) {
+                        SelectionKey key = keys.next();
+                        keys.remove();
 
-                    if (!key.isValid()) continue;
+                        if (!key.isValid()) continue;
 
-                    if (key.isAcceptable()) {
-                        handleAccept(serverChannel, selector);
-                    } else if (key.isReadable()) {
-                        handleRead(key);
+                        try {
+                            if (key.isAcceptable()) {
+                                handleAccept(serverChannel, selector);
+                            } else if (key.isReadable()) {
+                                handleRead(key);
+                            }
+                        } catch (Exception ex) {
+                            try { key.cancel(); } catch (Exception ignored) {}
+                        }
+                    }
+                } catch (Exception e) {
+                    if (running) {
+                        System.err.println("RobinServer select loop warning: " + e.getMessage());
                     }
                 }
             }
-
         } catch (IOException e) {
-            System.err.println("RobinServer error: " + e.getMessage());
+            System.err.println("RobinServer fatal bind error: " + e.getMessage());
         }
     }
 

@@ -2,48 +2,67 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>RobinHood — Vanilla JDK Gaming Platform</title>
+  <title>RobinHood — Contemporary Gaming Platform</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Discover games, play against tactical AI, or compete in real-time multiplayer with custom rooms and instant matchmaking." />
+  <meta name="theme-color" content="#101216" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
 
-  <!-- Top Sticky Navigation Bar -->
+  <!-- Top Sticky Header Navigation Bar -->
   <header class="app-header">
     <div class="header-container">
-      <a href="#" class="brand" id="brandLogo">
-        <div class="brand-icon">🏹</div>
-        <span>RobinHood</span>
+      <a href="#" class="brand" id="brandLogo" aria-label="RobinHood Gaming Home">
+        <div class="brand-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">RobinHood</span>
+          <span class="brand-sub">Platform</span>
+        </div>
       </a>
 
       <div class="nav-controls">
-        <div id="balanceChip" class="balance-chip hidden">
-          <span>🪙</span>
-          <span id="headerBalance">0</span>
+        <div id="balanceChip" class="balance-chip hidden" title="Available Balance">
+          <span class="balance-icon">🪙</span>
+          <span id="headerBalance" class="balance-value">0</span>
+          <span class="balance-currency">Tokens</span>
         </div>
 
-        <div id="userBadge" class="user-badge hidden">
-          <div class="user-avatar" id="headerAvatar">?</div>
-          <span id="headerUsername">Player</span>
+        <div id="userBadge" class="user-badge hidden" title="Logged in player">
+          <div class="user-avatar" id="headerAvatar">P</div>
+          <span id="headerUsername" class="user-name">Player</span>
         </div>
 
-        <button id="logoutBtn" class="btn btn-secondary hidden" style="padding: 0.4rem 0.85rem; font-size: 0.85rem;">
+        <a href="/docs" target="_blank" class="nav-action-link" title="Open Swagger API Explorer & Live System Telemetry">
+          <span class="action-icon">⚡</span>
+          <span class="action-label">API & Monitor</span>
+        </a>
+
+        <button id="logoutBtn" class="btn btn-ghost btn-sm hidden" title="Log out of current session">
           Log Out
         </button>
       </div>
     </div>
   </header>
 
-  <!-- Main View Container -->
+  <!-- Main Viewport Shell -->
   <main class="main-wrapper">
-    <div id="app"></div>
+    <div id="app" class="app-viewport"></div>
   </main>
 
-  <!-- Toast Notification Container -->
-  <div id="toast-container" class="toast-container"></div>
+  <!-- Toast Notification Stack -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
-  <!-- Main Application Script -->
+  <!-- Main Application Orchestrator -->
   <script type="module" src="scripts/main.js"></script>
 
 </body>
 </html>
+

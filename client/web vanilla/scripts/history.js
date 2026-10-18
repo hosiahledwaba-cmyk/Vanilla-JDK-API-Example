@@ -10,16 +10,16 @@ export const HistoryModule = {
       <div>
         ${renderNavTabs('history')}
 
-        <div class="glass-card">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
             <div>
-              <h2 style="font-size: 1.6rem; font-weight: 800; letter-spacing: -0.02em;">Activity & History</h2>
-              <p style="color: var(--text-secondary); font-size: 0.95rem;">
-                Audit log of deposits, withdrawals, and game wagers
+              <h1 style="font-size: 1.75rem; font-weight: 800; letter-spacing: -0.03em;">Activity & Ledger</h1>
+              <p style="color: var(--text-secondary); font-size: 0.92rem; margin-top: 0.25rem;">
+                Audit log of transactions, match wagers, and token cashouts.
               </p>
             </div>
-            <button id="refreshHistoryBtn" class="btn btn-secondary" style="font-size: 0.85rem; padding: 0.45rem 0.85rem;">
-              🔄 Refresh Log
+            <button id="refreshHistoryBtn" class="btn btn-secondary btn-sm" style="display: flex; align-items: center; gap: 0.35rem;">
+              <span>🔄</span> Refresh Log
             </button>
           </div>
 

@@ -13,8 +13,16 @@ public class GameManager {
     }
 
     public static GameSession createSession(int maxPlayers, int wagerAmount) {
+        return createSession(maxPlayers, wagerAmount, com.robinhood.engine.GameType.SNAKES_AND_LADDERS);
+    }
+
+    public static GameSession createSession(int maxPlayers, int wagerAmount, com.robinhood.engine.GameType gameType) {
         String sessionId = UUID.randomUUID().toString();
-        GameSession session = new GameSession(sessionId, maxPlayers, wagerAmount);
+        return createSession(sessionId, maxPlayers, wagerAmount, gameType);
+    }
+
+    public static GameSession createSession(String sessionId, int maxPlayers, int wagerAmount, com.robinhood.engine.GameType gameType) {
+        GameSession session = new GameSession(sessionId, maxPlayers, wagerAmount, gameType);
         sessions.put(sessionId, session);
         return session;
     }

@@ -13,6 +13,16 @@ public class Main {
         RobinServer server = new RobinServer(8080);
         server.start();
 
+        try {
+            if (com.robinhood.db.DBManager.isAvailable()) {
+                System.out.println("[Main] Connected to PostgreSQL in Docker on port 5433 successfully.");
+            } else {
+                System.out.println("[Main] Warning: Database connection returned false.");
+            }
+        } catch (Exception e) {
+            System.err.println("[Main] Database connection check error: " + e.getMessage());
+        }
+
         Timer timer = new Timer(true);
         timer.scheduleAtFixedRate(new SessionCleaner(), 60_000, 60_000);
         timer.scheduleAtFixedRate(new TimerTask() {
@@ -23,5 +33,9 @@ public class Main {
         }, 15_000, 15_000);
 
         System.out.println("Robinhood Vanilla JDK Server ready at http://localhost:8080");
+
+        try {
+            Thread.currentThread().join();
+        } catch (InterruptedException ignored) {}
     }
 }

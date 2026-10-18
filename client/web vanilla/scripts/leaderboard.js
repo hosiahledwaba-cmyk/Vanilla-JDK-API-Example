@@ -10,16 +10,16 @@ export const LeaderboardModule = {
       <div>
         ${renderNavTabs('leaderboard')}
 
-        <div class="glass-card">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
             <div>
-              <h2 style="font-size: 1.6rem; font-weight: 800; letter-spacing: -0.02em;">Weekly Leaderboard</h2>
-              <p style="color: var(--text-secondary); font-size: 0.95rem;">
-                Top players ranked by total XP earned across game sessions
+              <h1 style="font-size: 1.75rem; font-weight: 800; letter-spacing: -0.03em;">Weekly Leaderboard</h1>
+              <p style="color: var(--text-secondary); font-size: 0.92rem; margin-top: 0.25rem;">
+                Top competitive players ranked by match victories and XP across all games.
               </p>
             </div>
-            <button id="refreshLeaderboardBtn" class="btn btn-secondary" style="font-size: 0.85rem; padding: 0.45rem 0.85rem;">
-              🔄 Refresh Ranks
+            <button id="refreshLeaderboardBtn" class="btn btn-secondary btn-sm" style="display: flex; align-items: center; gap: 0.35rem;">
+              <span>🔄</span> Refresh Ranks
             </button>
           </div>
 
@@ -29,7 +29,7 @@ export const LeaderboardModule = {
                 <tr>
                   <th style="width: 80px;">Rank</th>
                   <th>Player</th>
-                  <th>Tier</th>
+                  <th>Tier Status</th>
                   <th style="text-align: right;">Total XP</th>
                 </tr>
               </thead>

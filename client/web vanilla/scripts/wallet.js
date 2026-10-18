@@ -11,34 +11,40 @@ export const WalletModule = {
       <div>
         ${renderNavTabs('wallet')}
 
-        <div class="glass-card">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
             <div>
-              <h2 style="font-size: 1.6rem; font-weight: 800; letter-spacing: -0.02em;">Token Wallet</h2>
-              <p style="color: var(--text-secondary); font-size: 0.95rem;">Manage your game balance for Snakes & Ladders wagers</p>
+              <h1 style="font-size: 1.75rem; font-weight: 800; letter-spacing: -0.03em;">Token Wallet</h1>
+              <p style="color: var(--text-secondary); font-size: 0.92rem; margin-top: 0.25rem;">
+                Manage your available balance for all game modes, tournaments, and multiplayer rooms.
+              </p>
             </div>
-            <button id="refreshBalanceBtn" class="btn btn-secondary" style="font-size: 0.85rem; padding: 0.45rem 0.85rem;">
-              🔄 Refresh Balance
+            <button id="refreshBalanceBtn" class="btn btn-secondary btn-sm" style="display: flex; align-items: center; gap: 0.35rem;">
+              <span>🔄</span> Refresh Balance
             </button>
           </div>
 
           <div class="balance-card">
             <div>
-              <div style="font-size: 0.85rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.25rem;">
+              <div style="font-size: 0.8rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.05em; margin-bottom: 0.35rem;">
                 Available Token Balance
               </div>
               <div class="value" id="walletBalance">...</div>
+              <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.35rem;">
+                Active across Khasino, Snakes & Ladders, Crazy 8s, and Uno
+              </div>
             </div>
-            <div style="font-size: 3rem;">🪙</div>
+            <div style="font-size: 3.25rem; opacity: 0.9;">🪙</div>
           </div>
 
           <div class="wallet-grid">
             <!-- Deposit Section -->
-            <div style="background: var(--surface-elevated); border: 1px solid var(--border-glass); border-radius: var(--radius-md); padding: 1.5rem;">
-              <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-                <span>💳</span> Deposit Tokens
-              </h3>
-              <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1rem;">
+            <div style="background: var(--surface-secondary); border: 1px solid var(--border-medium); border-radius: var(--radius-lg); padding: 1.5rem;">
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                <span style="font-size: 1.25rem;">💳</span>
+                <h3 style="font-size: 1.15rem; font-weight: 700;">Deposit Tokens</h3>
+              </div>
+              <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.25rem;">
                 Fund your account with instant test credit
               </p>
 
@@ -54,28 +60,29 @@ export const WalletModule = {
                 </div>
 
                 <div class="form-group">
-                  <label class="form-label" for="depositAmount">Amount (tokens)</label>
+                  <label class="form-label" for="depositAmount">Amount (Tokens)</label>
                   <input type="number" id="depositAmount" class="form-input" value="100" min="1" step="1" required />
                 </div>
 
-                <button type="submit" id="depositBtn" class="btn btn-primary" style="width: 100%;">
+                <button type="submit" id="depositBtn" class="btn btn-primary" style="width: 100%; padding: 0.8rem;">
                   Deposit Now
                 </button>
               </form>
             </div>
 
             <!-- Withdraw Section -->
-            <div style="background: var(--surface-elevated); border: 1px solid var(--border-glass); border-radius: var(--radius-md); padding: 1.5rem;">
-              <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-                <span>💸</span> Cash Out Tokens
-              </h3>
-              <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1rem;">
-                Withdraw your match earnings anytime
+            <div style="background: var(--surface-secondary); border: 1px solid var(--border-medium); border-radius: var(--radius-lg); padding: 1.5rem;">
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                <span style="font-size: 1.25rem;">💸</span>
+                <h3 style="font-size: 1.15rem; font-weight: 700;">Cash Out Tokens</h3>
+              </div>
+              <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.25rem;">
+                Withdraw your match winnings anytime
               </p>
 
               <form id="withdrawForm">
                 <div class="form-group">
-                  <label class="form-label" for="withdrawAmount">Amount (tokens)</label>
+                  <label class="form-label" for="withdrawAmount">Amount (Tokens)</label>
                   <input type="number" id="withdrawAmount" class="form-input" placeholder="e.g. 50" min="1" step="1" required />
                 </div>
 
@@ -88,7 +95,7 @@ export const WalletModule = {
                   </select>
                 </div>
 
-                <button type="submit" id="withdrawBtn" class="btn btn-danger" style="width: 100%;">
+                <button type="submit" id="withdrawBtn" class="btn btn-danger" style="width: 100%; padding: 0.8rem;">
                   Request Cashout
                 </button>
               </form>

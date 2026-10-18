@@ -15,14 +15,17 @@ import java.util.Map;
 public class WalletController {
     private static final Map<String, Wallet> wallets = new HashMap<>();
 
+    private static synchronized Wallet getOrCreateWallet(String email) {
+        return wallets.computeIfAbsent(email, e -> new Wallet(e, 500));
+    }
+
     public static String deposit(String token, String body) {
         String email = AuthManager.getEmailFromToken(token);
         Map<String, String> data = JSONParser.parse(body);
         int amount = Integer.parseInt(data.getOrDefault("amount", "0"));
 
-        Wallet wallet = wallets.getOrDefault(email, new Wallet(email, 0));
+        Wallet wallet = getOrCreateWallet(email);
         wallet.deposit(amount);
-        wallets.put(email, wallet);
 
         LedgerManager.log(new LedgerEntry(email, LedgerEntry.Type.DEPOSIT, amount, "Manual deposit"));
 
@@ -31,7 +34,7 @@ public class WalletController {
 
     public static String balance(String token) {
         String email = AuthManager.getEmailFromToken(token);
-        Wallet wallet = wallets.getOrDefault(email, new Wallet(email, 0));
+        Wallet wallet = getOrCreateWallet(email);
         return ResponseBuilder.json(200, "{\"balance\":" + wallet.getBalance() + ",\"email\":\"" + email + "\"}");
     }
 
@@ -48,21 +51,17 @@ public class WalletController {
         return ResponseBuilder.json(200, "{\"balance\":" + getBalance(email) + ",\"message\":\"Withdrawn successfully\"}");
     }
 
-    public static boolean deduct(String email, int amount) {
-        Wallet wallet = wallets.get(email);
-        if (wallet == null || !wallet.deduct(amount)) return false;
-        wallets.put(email, wallet);
-        return true;
+    public static synchronized boolean deduct(String email, int amount) {
+        Wallet wallet = getOrCreateWallet(email);
+        return wallet.deduct(amount);
     }
 
-    public static void credit(String email, int amount) {
-        Wallet wallet = wallets.getOrDefault(email, new Wallet(email, 0));
+    public static synchronized void credit(String email, int amount) {
+        Wallet wallet = getOrCreateWallet(email);
         wallet.deposit(amount);
-        wallets.put(email, wallet);
     }
 
     public static int getBalance(String email) {
-        Wallet wallet = wallets.getOrDefault(email, new Wallet(email, 0));
-        return wallet.getBalance();
+        return getOrCreateWallet(email).getBalance();
     }
 }

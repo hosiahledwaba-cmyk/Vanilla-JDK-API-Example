@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>RobinHood API Explorer & System Monitor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    :root {
+      --swagger-get: #3b82f6;
+      --swagger-get-bg: rgba(59, 130, 246, 0.12);
+      --swagger-get-border: rgba(59, 130, 246, 0.35);
+      --swagger-post: #10b981;
+      --swagger-post-bg: rgba(16, 185, 129, 0.12);
+      --swagger-post-border: rgba(16, 185, 129, 0.35);
+      --swagger-delete: #ef4444;
+      --swagger-delete-bg: rgba(239, 68, 68, 0.12);
+      --swagger-delete-border: rgba(239, 68, 68, 0.35);
+      --swagger-put: #f59e0b;
+      --swagger-put-bg: rgba(245, 158, 11, 0.12);
+      --swagger-put-border: rgba(245, 158, 11, 0.35);
+    }
+
+    body {
+      background: radial-gradient(circle at 15% 15%, rgba(6, 182, 212, 0.08), transparent 45%),
+                  radial-gradient(circle at 85% 85%, rgba(139, 92, 246, 0.08), transparent 45%),
+                  #0a0f1d;
+      color: #f8fafc;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+
+    .docs-header {
+      background: rgba(13, 19, 33, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 0.85rem 2rem;
+    }
+
+    .docs-header-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .docs-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .docs-brand-icon {
+      font-size: 1.6rem;
+      background: linear-gradient(135deg, #06b6d4, #3b82f6);
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 16px rgba(6, 182, 212, 0.4);
+    }
+
+    .version-tag {
+      background: rgba(6, 182, 212, 0.15);
+      border: 1px solid rgba(6, 182, 212, 0.4);
+      color: #22d3ee;
+      font-size: 0.72rem;
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+    }
+
+    .pulse-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulseAnim 2s infinite;
+    }
+
+    @keyframes pulseAnim {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
+    }
+
+    .nav-tabs-bar {
+      display: flex;
+      gap: 0.5rem;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .nav-tab-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-weight: 600;
+      font-size: 0.88rem;
+      padding: 0.45rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+    }
+
+    .nav-tab-btn.active {
+      background: rgba(6, 182, 212, 0.15);
+      color: #38bdf8;
+      border: 1px solid rgba(6, 182, 212, 0.3);
+    }
+
+    .docs-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* Monitoring Grid */
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .metric-card {
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 1.25rem 1.5rem;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .metric-card:hover {
+      border-color: rgba(6, 182, 212, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .metric-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #06b6d4, #8b5cf6);
+      opacity: 0.7;
+    }
+
+    .metric-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #94a3b8;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .metric-val {
+      font-size: 1.9rem;
+      font-weight: 800;
+      color: #ffffff;
+      font-family: 'JetBrains Mono', monospace;
+      margin-bottom: 0.35rem;
+    }
+
+    .metric-sub {
+      font-size: 0.8rem;
+      color: #64748b;
+    }
+
+    .progress-bar {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 0.75rem;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #10b981, #06b6d4);
+      border-radius: 999px;
+      transition: width 0.4s ease;
+    }
+
+    /* Endpoint Accordion Cards */
+    .api-group {
+      margin-bottom: 2rem;
+    }
+
+    .api-group-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      margin-bottom: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      color: #e2e8f0;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .endpoint-card {
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(10px);
+      border-radius: 10px;
+      margin-bottom: 0.75rem;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      transition: all 0.2s ease;
+      overflow: hidden;
+    }
+
+    .endpoint-card.get { border-left: 4px solid var(--swagger-get); }
+    .endpoint-card.post { border-left: 4px solid var(--swagger-post); }
+    .endpoint-card.delete { border-left: 4px solid var(--swagger-delete); }
+
+    .endpoint-header {
+      padding: 0.85rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+      gap: 1rem;
+    }
+
+    .endpoint-header:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .endpoint-identity {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .method-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 800;
+      font-size: 0.8rem;
+      padding: 3px 10px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .method-badge.get { background: var(--swagger-get-bg); color: var(--swagger-get); border: 1px solid var(--swagger-get-border); }
+    .method-badge.post { background: var(--swagger-post-bg); color: var(--swagger-post); border: 1px solid var(--swagger-post-border); }
+    .method-badge.delete { background: var(--swagger-delete-bg); color: var(--swagger-delete); border: 1px solid var(--swagger-delete-border); }
+
+    .endpoint-path {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #f1f5f9;
+    }
+
+    .endpoint-summary {
+      color: #94a3b8;
+      font-size: 0.85rem;
+    }
+
+    .endpoint-body {
+      padding: 1.25rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      background: rgba(10, 15, 28, 0.7);
+      display: none;
+    }
+
+    .endpoint-body.open {
+      display: block;
+    }
+
+    .param-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .param-table th {
+      text-align: left;
+      color: #94a3b8;
+      padding: 6px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      font-weight: 700;
+    }
+
+    .param-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: #cbd5e1;
+    }
+
+    .code-box {
+      font-family: 'JetBrains Mono', monospace;
+      background: #070b14;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 0.85rem;
+      font-size: 0.82rem;
+      color: #38bdf8;
+      width: 100%;
+      box-sizing: border-box;
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .response-box {
+      background: #050811;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      max-height: 350px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      color: #a7f3d0;
+      margin-top: 0.75rem;
+    }
+
+    .status-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .status-pill.success { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .status-pill.client-err { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
+    .status-pill.server-err { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
+
+    .btn-execute {
+      background: linear-gradient(135deg, #06b6d4, #2563eb);
+      color: #ffffff;
+      border: none;
+      padding: 0.55rem 1.4rem;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+    }
+
+    .btn-execute:hover {
+      box-shadow: 0 0 16px rgba(6, 182, 212, 0.5);
+      transform: translateY(-1px);
+    }
+
+    .auth-banner {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Sticky Header -->
+  <header class="docs-header">
+    <div class="docs-header-inner">
+      <div style="display: flex; align-items: center; gap: 1.25rem;">
+        <a href="/" class="docs-brand">
+          <div class="docs-brand-icon">🏹</div>
+          <div>
+            <div style="font-weight: 800; font-size: 1.15rem; display: flex; align-items: center; gap: 0.5rem;">
+              RobinHood <span style="color: var(--accent-cyan);">API Explorer</span>
+              <span class="version-tag">v1.4.0</span>
+            </div>
+            <div style="font-size: 0.75rem; color: #64748b; font-family: 'JetBrains Mono', monospace;">
+              PostgreSQL 16 @ Docker:5433 • Pure Vanilla JDK
+            </div>
+          </div>
+        </a>
+
+        <div style="display: flex; align-items: center; gap: 0.5rem; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); padding: 4px 10px; border-radius: 999px;">
+          <span class="pulse-dot"></span>
+          <span id="headerStatusText" style="font-size: 0.75rem; font-weight: 700; color: #34d399; font-family: 'JetBrains Mono', monospace;">
+            Server Online
+          </span>
+          <span style="color: #64748b;">•</span>
+          <span id="headerLatencyText" style="font-size: 0.72rem; color: #94a3b8; font-family: 'JetBrains Mono', monospace;">-- ms</span>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="nav-tabs-bar">
+        <button id="tabBtnDocs" class="nav-tab-btn active" onclick="switchTab('docs')">
+          <span>⚡</span> API Console (Swagger)
+        </button>
+        <button id="tabBtnMonitor" class="nav-tab-btn" onclick="switchTab('monitor')">
+          <span>📊</span> Live System Monitor
+        </button>
+        <button id="tabBtnStream" class="nav-tab-btn" onclick="switchTab('stream')">
+          <span>📡</span> SSE Event Stream
+        </button>
+      </div>
+
+      <!-- Header Controls -->
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <button id="authBtn" class="btn btn-secondary" onclick="openAuthModal()" style="font-size: 0.85rem; padding: 0.45rem 0.9rem; display: flex; align-items: center; gap: 0.4rem; border-color: rgba(6, 182, 212, 0.4); color: #38bdf8;">
+          <span id="authBtnIcon">🔓</span> <span id="authBtnText">Authorize</span>
+        </button>
+        <a href="/" class="btn btn-secondary" style="font-size: 0.85rem; padding: 0.45rem 0.9rem; text-decoration: none;">
+          🎮 Game Lobby
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="docs-container">
+
+    <!-- Active Token / Quick Context Banner -->
+    <div class="auth-banner">
+      <div style="display: flex; align-items: center; gap: 0.85rem;">
+        <div style="font-size: 1.5rem;">🔑</div>
+        <div>
+          <div style="font-size: 0.85rem; font-weight: 700; color: #f8fafc;">
+            Active Authorization Context:
+            <span id="activeAuthBadge" style="color: #fbbf24; font-family: 'JetBrains Mono', monospace;">Anonymous (No Token)</span>
+          </div>
+          <div style="font-size: 0.75rem; color: #94a3b8;">
+            Protected endpoints will automatically attach your active Bearer token in the <code>Authorization</code> header.
+          </div>
+        </div>
+      </div>
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <button class="btn btn-secondary" onclick="quickAuth('p1@robinhood.io', 'password123')" style="font-size: 0.75rem; padding: 0.35rem 0.75rem;">
+          ⚡ Login Player 1
+        </button>
+        <button class="btn btn-secondary" onclick="quickAuth('p2@robinhood.io', 'password123')" style="font-size: 0.75rem; padding: 0.35rem 0.75rem;">
+          ⚡ Login Player 2
+        </button>
+        <button class="btn btn-secondary" onclick="setAdminToken()" style="font-size: 0.75rem; padding: 0.35rem 0.75rem; border-color: rgba(139, 92, 246, 0.4); color: #c084fc;">
+          🛡️ Admin Token
+        </button>
+      </div>
+    </div>
+
+    <!-- TAB 1: SWAGGER API CONSOLE -->
+    <section id="viewDocs">
+      <!-- Search & Filter Controls -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div style="display: flex; gap: 0.5rem; align-items: center; flex: 1; max-width: 500px;">
+          <input type="text" id="endpointSearch" class="form-input" placeholder="🔍 Filter endpoints by path, tag, or method..." oninput="filterEndpoints()" style="font-size: 0.88rem; padding: 0.55rem 1rem;" />
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="btn btn-secondary" onclick="expandAllEndpoints(true)" style="font-size: 0.78rem; padding: 0.35rem 0.75rem;">
+            Expand All
+          </button>
+          <button class="btn btn-secondary" onclick="expandAllEndpoints(false)" style="font-size: 0.78rem; padding: 0.35rem 0.75rem;">
+            Collapse All
+          </button>
+        </div>
+      </div>
+
+      <!-- Endpoints Container Rendered by JS -->
+      <div id="endpointsContainer"></div>
+    </section>
+
+    <!-- TAB 2: SYSTEM MONITORING DASHBOARD -->
+    <section id="viewMonitor" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h2 style="font-size: 1.4rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+            <span>📊</span> Real-Time Infrastructure & Engine Monitoring
+          </h2>
+          <p style="color: #94a3b8; font-size: 0.85rem;">
+            Live JVM runtime telemetry, Docker PostgreSQL connection status, and game session counters.
+          </p>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.82rem; color: #94a3b8;">
+            <span>Auto-refresh:</span>
+            <select id="monitorRefreshRate" class="form-input" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; width: auto;" onchange="updateRefreshInterval()">
+              <option value="2000">2s</option>
+              <option value="5000" selected>5s</option>
+              <option value="10000">10s</option>
+              <option value="0">Off</option>
+            </select>
+          </div>
+          <button class="btn btn-secondary" onclick="fetchSystemStats(true)" style="font-size: 0.82rem; padding: 0.4rem 0.85rem; display: flex; align-items: center; gap: 0.35rem;">
+            <span>🔄</span> Refresh Now
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI Grid -->
+      <div class="metric-grid">
+        <div class="metric-card">
+          <div class="metric-title">
+            <span>Server & NIO Engine</span>
+            <span>⚡ Port 8080</span>
+          </div>
+          <div class="metric-val" id="metricServerStatus">UP</div>
+          <div class="metric-sub" id="metricServerUptime">Uptime: Calculating...</div>
+          <div class="metric-sub" style="margin-top: 0.25rem;" id="metricServerThreads">Threads: -- active</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-title">
+            <span>Database (Docker Container)</span>
+            <span id="metricDbTag" style="color: #34d399; font-family: 'JetBrains Mono';">PostgreSQL 16</span>
+          </div>
+          <div class="metric-val" id="metricDbStatus" style="color: #34d399;">CONNECTED</div>
+          <div class="metric-sub" id="metricDbDetails">Port 5433 • Host localhost</div>
+          <div class="metric-sub" style="margin-top: 0.25rem;" id="metricDbStats">Users: -- • Matches: --</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-title">
+            <span>JVM Heap Memory</span>
+            <span id="metricMemPercent">--%</span>
+          </div>
+          <div class="metric-val" id="metricMemUsed">-- MB</div>
+          <div class="metric-sub" id="metricMemMax">Max Allocated: -- MB</div>
+          <div class="progress-bar">
+            <div id="metricMemBar" class="progress-fill" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-title">
+            <span>Live Game Engine</span>
+            <span>🎮 Synchronous</span>
+          </div>
+          <div class="metric-val" id="metricActiveSessions">0</div>
+          <div class="metric-sub" id="metricWaitingRooms">Waiting Lobbies: 0</div>
+          <div class="metric-sub" style="margin-top: 0.25rem;" id="metricQueueCount">Matchmaking Queue: 0 players</div>
+        </div>
+      </div>
+
+      <!-- Raw Stats & Prometheus Scraper Details -->
+      <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 1.5rem; margin-top: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h3 style="font-size: 1rem; font-weight: 700; color: #ffffff;">
+            Live JSON Telemetry Payload (<code>/api/system/stats</code>)
+          </h3>
+          <button class="btn btn-secondary" onclick="navigator.clipboard.writeText(document.getElementById('rawStatsViewer').textContent); window.showToast('Copied JSON telemetry', 'success');" style="font-size: 0.75rem; padding: 0.25rem 0.65rem;">
+            📋 Copy JSON
+          </button>
+        </div>
+        <div id="rawStatsViewer" class="response-box" style="margin-top: 0; max-height: 280px;">Loading live telemetry...</div>
+      </div>
+    </section>
+
+    <!-- TAB 3: SSE EVENT STREAM MONITOR -->
+    <section id="viewStream" style="display: none;">
+      <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h2 style="font-size: 1.3rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+              <span>📡</span> Real-Time Server-Sent Events (SSE) Live Monitor
+            </h2>
+            <p style="color: #94a3b8; font-size: 0.85rem;">
+              Attach to any active Match Session ID or Waiting Room ID to inspect real-time published broadcasts.
+            </p>
+          </div>
+
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn btn-secondary" onclick="clearStreamLog()" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">
+              ✕ Clear Stream
+            </button>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; margin-bottom: 1.25rem; flex-wrap: wrap;">
+          <input type="text" id="streamTopicInput" class="form-input" placeholder="Enter Session ID or Room ID..." style="flex: 1; min-width: 280px; font-size: 0.88rem;" />
+          <button id="streamConnectBtn" class="btn btn-primary" onclick="toggleSseStream()" style="font-size: 0.88rem; padding: 0.55rem 1.25rem;">
+            Connect to Stream
+          </button>
+        </div>
+
+        <div id="streamEventContainer" class="response-box" style="min-height: 380px; max-height: 500px; color: #38bdf8; font-size: 0.82rem;">
+          [Ready] Enter a Session ID or Room ID above and click Connect to inspect live SSE frames.
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Authorize Modal -->
+  <div id="authModal" class="modal-overlay hidden" style="z-index: 200;">
+    <div class="modal-content" style="max-width: 520px; text-align: left; padding: 2rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.75rem;">
+        <h3 style="font-size: 1.25rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem;">
+          <span>🔐</span> API Authorization (Bearer Token)
+        </h3>
+        <button class="btn btn-secondary" onclick="closeAuthModal()" style="font-size: 0.8rem; padding: 0.25rem 0.6rem;">✕</button>
+      </div>
+
+      <div style="font-size: 0.85rem; color: #94a3b8; line-height: 1.5; margin-bottom: 1rem;">
+        Enter your JWT Bearer token below. All protected API requests sent from this console will automatically include <code>Authorization: Bearer &lt;token&gt;</code>.
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">JWT Bearer Token:</label>
+        <textarea id="modalTokenInput" class="form-input" style="font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; height: 90px; resize: vertical;" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."></textarea>
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; justify-content: space-between; margin-top: 1.25rem; flex-wrap: wrap;">
+        <button class="btn btn-secondary" onclick="clearActiveToken()" style="font-size: 0.85rem;">
+          Clear Token
+        </button>
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="btn btn-secondary" onclick="closeAuthModal()" style="font-size: 0.85rem;">
+            Cancel
+          </button>
+          <button class="btn btn-primary" onclick="saveActiveToken()" style="font-size: 0.85rem;">
+            Save & Authorize
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script type="module" src="scripts/docs.js"></script>
+</body>
+</html>

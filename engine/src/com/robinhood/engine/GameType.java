@@ -7,5 +7,6 @@ public enum GameType {
     SNAKES_AND_LADDERS,
     LUDO,
     UNO,
-    CRAZY_EIGHT
+    CRAZY_EIGHT,
+    KHASINO
 }

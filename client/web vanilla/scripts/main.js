@@ -43,20 +43,20 @@ window.updateHeaderBalance = updateHeaderBalance;
 
 export function renderNavTabs(activeTab = 'lobby') {
   return `
-    <div class="tabs-bar">
-      <button class="tab-btn ${activeTab === 'lobby' ? 'active' : ''}" data-nav="lobby">
-        🎲 Game Lobby
+    <nav class="tabs-bar" role="tablist" aria-label="Main Navigation">
+      <button class="tab-btn ${activeTab === 'lobby' ? 'active' : ''}" data-nav="lobby" role="tab" aria-selected="${activeTab === 'lobby'}">
+        <span>🎮</span> Games & Lobby
       </button>
-      <button class="tab-btn ${activeTab === 'wallet' ? 'active' : ''}" data-nav="wallet">
-        💼 Token Wallet
+      <button class="tab-btn ${activeTab === 'wallet' ? 'active' : ''}" data-nav="wallet" role="tab" aria-selected="${activeTab === 'wallet'}">
+        <span>🪙</span> Token Wallet
       </button>
-      <button class="tab-btn ${activeTab === 'leaderboard' ? 'active' : ''}" data-nav="leaderboard">
-        🏆 Leaderboard
+      <button class="tab-btn ${activeTab === 'leaderboard' ? 'active' : ''}" data-nav="leaderboard" role="tab" aria-selected="${activeTab === 'leaderboard'}">
+        <span>🏆</span> Leaderboard
       </button>
-      <button class="tab-btn ${activeTab === 'history' ? 'active' : ''}" data-nav="history">
-        📜 History
+      <button class="tab-btn ${activeTab === 'history' ? 'active' : ''}" data-nav="history" role="tab" aria-selected="${activeTab === 'history'}">
+        <span>📜</span> History & Ledger
       </button>
-    </div>
+    </nav>
   `;
 }
 
